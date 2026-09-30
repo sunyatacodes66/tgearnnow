@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EARN NOW MiniApp</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        },
+                        dark: {
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Telegram WebApp JS -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.js"></script>
+
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Glassmorphism card effect */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-20">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-11/12 max-w-md pointer-events-none"></div>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-dark-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm font-medium text-emerald-400">Loading Telegram MiniApp...</p>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="flex-1 max-w-md w-full mx-auto p-4">
+
+        <!-- ================= TAB 1: USER DASHBOARD ================= -->
+        <div id="tab-dashboard" class="space-y-5">
+            <!-- Header Profile Section -->
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div class="flex items-center space-x-3">
+                    <img id="header-avatar" src="https://placehold.co/100x100/1e293b/10b981?text=U" alt="Profile" class="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-md">
+                    <div>
+                        <h2 id="header-name" class="font-bold text-lg text-white">Loading...</h2>
+                        <p class="text-xs text-slate-400">ID: <span id="header-userid">---</span></p>
+                    </div>
+                </div>
+                <div class="bg-emerald-500/20 px-3 py-1.5 rounded-full border border-emerald-500/30 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-shield-halved text-emerald-400 text-xs"></i>
+                    <span class="text-xs font-semibold text-emerald-300">Verified</span>
+                </div>
+            </div>
+
+            <!-- Global Announcement Banner -->
+            <div id="announcement-banner" class="hidden glass-card rounded-xl p-3.5 border-l-4 border-emerald-500 bg-gradient-to-r from-emerald-950/40 to-slate-900/40 shadow">
+                <div class="flex items-start space-x-3">
+                    <div class="bg-emerald-500/20 p-2 rounded-lg text-emerald-400 mt-0.5">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 id="announcement-title" class="text-sm font-bold text-white">Announcement</h4>
+                        <p id="announcement-body" class="text-xs text-slate-300 mt-0.5">Loading latest news...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Grid (4 Cards) -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-medium">Total Coins / ₹</span>
+                        <i class="fa-solid fa-coins text-amber-400"></i>
+                    </div>
+                    <div>
+                        <h3 id="stat-coins" class="text-2xl font-black text-white">0</h3>
+                        <p class="text-[10px] text-emerald-400 font-medium">Available Balance</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-medium">Referrals</span>
+                        <i class="fa-solid fa-user-group text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h3 id="stat-referrals" class="text-2xl font-black text-white">0</h3>
+                        <p class="text-[10px] text-blue-400 font-medium">Friends Invited</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-medium">Withdrawals</span>
+                        <i class="fa-solid fa-wallet text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h3 id="stat-withdrawals" class="text-2xl font-black text-white">0</h3>
+                        <p class="text-[10px] text-purple-400 font-medium">Total Cashed Out</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-medium">Tasks Done</span>
+                        <i class="fa-solid fa-list-check text-emerald-400"></i>
+                    </div>
+                    <div>
+                        <h3 id="stat-tasks" class="text-2xl font-black text-white">0</h3>
+                        <p class="text-[10px] text-emerald-400 font-medium">Completed Jobs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Tasks -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sm text-slate-200"><i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Featured Tasks</h3>
+                    <button onclick="switchTabs('tasks')" class="text-xs text-emerald-400 font-semibold hover:underline">View All</button>
+                </div>
+                <div id="quick-tasks-container" class="space-y-2.5">
+                    <!-- Rendered dynamically -->
+                    <div class="glass-card p-3.5 rounded-xl text-center text-slate-400 text-xs">Loading featured tasks...</div>
+                </div>
+            </div>
+
+            <!-- Referral Link Widget -->
+            <div class="glass-card p-4 rounded-xl space-y-2.5 bg-gradient-to-br from-emerald-900/20 to-slate-900/40">
+                <h3 class="font-bold text-sm text-white"><i class="fa-solid fa-share-nodes text-emerald-400 mr-1.5"></i> Invite & Earn</h3>
+                <p class="text-xs text-slate-300">Share your referral link with friends and earn bonus coins for every join!</p>
+                <div class="flex items-center space-x-2 pt-1">
+                    <input type="text" id="referral-link-input" readonly class="bg-dark-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 flex-1 focus:outline-none" value="Generating...">
+                    <button onclick="copyReferralLink()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-1">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: TASK SECTION ================= -->
+        <div id="tab-tasks" class="space-y-4 hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="font-bold text-lg text-white">Earn Coins</h2>
+                    <p class="text-xs text-slate-400">Complete tasks & watch ads to boost earnings</p>
+                </div>
+                <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-500/30">Real-time</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="task-search" oninput="filterTasks()" placeholder="Search tasks by name or type..." class="w-full bg-dark-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <!-- Permanent Watch Ad Task Card (Adsgram Integrated) -->
+            <div class="glass-card rounded-xl p-4 border border-emerald-500/40 bg-gradient-to-r from-emerald-950/60 to-slate-900/60 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-emerald-500 text-dark-900 font-extrabold text-[9px] uppercase px-2.5 py-0.5 rounded-bl-lg">Featured</div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+                            <i class="fa-solid fa-tv"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-white">Watch Sponsored Ad</h4>
+                            <p class="text-[11px] text-emerald-400 font-medium">+50 Coins Reward • Instant Credit</p>
+                        </div>
+                    </div>
+                    <button onclick="watchAdsgramAd()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-play text-[10px]"></i>
+                        <span>Watch Ad</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Task List Container -->
+            <div id="all-tasks-container" class="space-y-2.5">
+                <div class="glass-card p-4 rounded-xl text-center text-slate-400 text-xs">Loading all available tasks...</div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: WITHDRAWAL SECTION ================= -->
+        <div id="tab-withdrawal" class="space-y-4 hidden">
+            <div>
+                <h2 class="font-bold text-lg text-white">Withdrawal Portal</h2>
+                <p class="text-xs text-slate-400">Cash out your earnings securely via UPI</p>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="glass-card rounded-2xl p-5 text-center relative overflow-hidden bg-gradient-to-b from-emerald-950/40 to-slate-900/60">
+                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1 font-semibold">Withdrawable Balance</p>
+                <h3 id="withdrawal-balance" class="text-3xl font-black text-white">₹0</h3>
+                <p class="text-[10px] text-slate-400 mt-1">Minimum withdrawal: ₹10 (100 Coins = ₹1)</p>
+            </div>
+
+            <!-- Withdrawal Form -->
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+                <h3 class="font-bold text-sm text-slate-200">Request Cashout</h3>
+                <div class="space-y-2">
+                    <label class="block text-xs text-slate-400">UPI ID / VPA</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-at absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="upi-input" placeholder="username@upi" class="w-full bg-dark-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs text-slate-400">Amount (Coins)</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-coins absolute left-3.5 top-1/2 transform -translate-y-1/2 text-amber-400 text-xs"></i>
+                        <input type="number" id="withdrawal-amount" placeholder="Enter amount to withdraw" class="w-full bg-dark-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <button onclick="submitWithdrawal()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg mt-2">
+                    Request Withdrawal
+                </button>
+            </div>
+
+            <!-- Recent Withdrawals History -->
+            <div class="space-y-2.5 pt-2">
+                <h3 class="font-bold text-sm text-slate-200"><i class="fa-solid fa-clock-rotate-left mr-1.5 text-emerald-400"></i> Recent Withdrawals</h3>
+                <div id="withdrawals-history-container" class="space-y-2">
+                    <div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">No withdrawal history found.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: PROFILE SECTION ================= -->
+        <div id="tab-profile" class="space-y-4 hidden">
+            <div>
+                <h2 class="font-bold text-lg text-white">My Profile</h2>
+                <p class="text-xs text-slate-400">Account info and statistics</p>
+            </div>
+
+            <!-- Profile Info Card -->
+            <div class="glass-card rounded-2xl p-5 flex flex-col items-center text-center space-y-3">
+                <img id="profile-avatar" src="https://placehold.co/100x100/1e293b/10b981?text=U" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-emerald-500/40 shadow-xl">
+                <div>
+                    <h3 id="profile-name" class="font-bold text-base text-white">Loading...</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Telegram ID: <span id="profile-userid">---</span></p>
+                </div>
+                <div class="w-full grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/60 text-left">
+                    <div class="bg-dark-900/50 p-2.5 rounded-xl">
+                        <span class="text-[10px] text-slate-400 block">Referred By</span>
+                        <span id="profile-referredby" class="text-xs font-bold text-emerald-400 truncate block">None</span>
+                    </div>
+                    <div class="bg-dark-900/50 p-2.5 rounded-xl">
+                        <span class="text-[10px] text-slate-400 block">Total Referrals</span>
+                        <span id="profile-totalref" class="text-xs font-bold text-blue-400 block">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Stats List -->
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+                <h3 class="font-bold text-sm text-slate-200">Account Overview</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between py-2 border-b border-slate-800">
+                        <span class="text-slate-400">Total Coins Earned</span>
+                        <span id="profile-coins" class="font-bold text-amber-400">0</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-slate-800">
+                        <span class="text-slate-400">Total Withdrawals Made</span>
+                        <span id="profile-withdrawals" class="font-bold text-purple-400">0</span>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-slate-400">Tasks Successfully Done</span>
+                        <span id="profile-tasks" class="font-bold text-emerald-400">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-2 pt-1">
+                <button onclick="refreshProfile()" class="w-full bg-dark-800 hover:bg-dark-700 border border-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
+                    <span>Refresh Profile Data</span>
+                </button>
+                <button onclick="copyReferralLink()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition flex items-center justify-center space-x-2 shadow">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Copy My Referral Link</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-dark-900/90 backdrop-blur-lg border-t border-slate-800 z-40 max-w-md mx-auto">
+        <div class="grid grid-cols-4 py-2 px-3 text-center">
+            <button onclick="switchTabs('dashboard')" id="nav-dashboard" class="flex flex-col items-center justify-center py-1 text-emerald-400 transition">
+                <i class="fa-solid fa-house text-base mb-1"></i>
+                <span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button onclick="switchTabs('tasks')" id="nav-tasks" class="flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-list-check text-base mb-1"></i>
+                <span class="text-[10px] font-semibold">Tasks</span>
+            </button>
+            <button onclick="switchTabs('withdrawal')" id="nav-withdrawal" class="flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-wallet text-base mb-1"></i>
+                <span class="text-[10px] font-semibold">Withdraw</span>
+            </button>
+            <button onclick="switchTabs('profile')" id="nav-profile" class="flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-user text-base mb-1"></i>
+                <span class="text-[10px] font-semibold">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        /* BOT_USERNAME placeholder: REPLACE_WITH_YOUR_BOT_USERNAME */
+        const BOT_USERNAME = "Earn_4now_bot";
+
+        /* FirebaseConfig placeholder: REPLACE WITH YOUR FIREBASE CONFIG */
+        const firebaseConfig = {
+  apiKey: "AIzaSyC7hlJ8Fy_Ygo23g4BvRG4zXgbmLswbzsY",
+  authDomain: "tgearnnow.firebaseapp.com",
+  databaseURL: "https://tgearnnow-default-rtdb.firebaseio.com",
+  projectId: "tgearnnow",
+  storageBucket: "tgearnnow.firebasestorage.app",
+  messagingSenderId: "368698070533",
+  appId: "1:368698070533:web:170020fe4aaf7bc3f8ee6c"
+};
+
+        let db, auth;
+        let tgUser = {
+            id: "guest_" + Math.floor(Math.random() * 1000000),
+            first_name: "Demo User",
+            photo_url: ""
+        };
+        let startParam = null;
+        let allTasksCache = [];
+        let unsubscribers = [];
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            initTelegram();
+            initFirebase();
+            createOrFetchUser();
+        };
+
+        /* ================= TELEGRAM INIT ================= */
+        function initTelegram() {
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    tg.ready();
+                    tg.expand();
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                        const user = tg.initDataUnsafe.user;
+                        tgUser.id = user.id.toString();
+                        tgUser.first_name = user.first_name || "User";
+                        tgUser.photo_url = user.photo_url || "";
+                    }
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+                        startParam = tg.initDataUnsafe.start_param;
+                    }
+                }
+            } catch (e) {
+                console.log("Running outside Telegram WebApp environment", e);
+            }
+        }
+
+        /* ================= FIREBASE INIT ================= */
+        function initFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                showToast("Firebase initialization error", "error");
+            }
+        }
+
+        /* ================= CREATE OR FETCH USER ================= */
+        function createOrFetchUser() {
+            if (!db) return;
+            const userRef = db.collection("users").doc(tgUser.id);
+
+            userRef.get().then((docSnapshot) => {
+                if (!docSnapshot.exists) {
+                    // New user creation
+                    const referralByVal = (startParam && startParam !== tgUser.id) ? startParam : null;
+                    const newUser = {
+                        id: tgUser.id,
+                        name: tgUser.first_name,
+                        photoURL: tgUser.photo_url,
+                        coins: 0,
+                        reffer: 0,
+                        refferBy: referralByVal,
+                        tasksCompleted: 0,
+                        totalWithdrawals: 0,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    userRef.set(newUser).then(() => {
+                        // If referred by someone, increment their referral count
+                        if (referralByVal) {
+                            const referrerRef = db.collection("users").doc(referralByVal);
+                            referrerRef.update({
+                                reffer: firebase.firestore.FieldValue.increment(1)
+                            }).catch(err => console.log("Referrer update failed:", err));
+                        }
+                        setupRealtimeListeners();
+                        hideLoading();
+                    }).catch(err => {
+                        console.error("Error creating user:", err);
+                        hideLoading();
+                    });
+                } else {
+                    setupRealtimeListeners();
+                    hideLoading();
+                }
+            }).catch(err => {
+                console.error("Error fetching user:", err);
+                hideLoading();
+            });
+        }
+
+        /* ================= REALTIME LISTENERS & RENDERERS ================= */
+        function setupRealtimeListeners() {
+            const userId = tgUser.id;
+
+            // 1. User Profile Realtime Listener
+            const userUnsub = db.collection("users").doc(userId).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    renderDashboard(data);
+                    renderProfile(data);
+                }
+            }, (error) => {
+                console.error("User listener error:", error);
+            });
+            unsubscribers.push(userUnsub);
+
+            // 2. Announcements Realtime Listener (Latest doc)
+            const annUnsub = db.collection("announcements").orderBy("createdAt", "desc").limit(1).onSnapshot((snapshot) => {
+                if (!snapshot.empty) {
+                    const annData = snapshot.docs[0].data();
+                    renderAnnouncement(annData);
+                } else {
+                    document.getElementById("announcement-banner").classList.add("hidden");
+                }
+            }, (error) => {
+                console.error("Announcement listener error:", error);
+            });
+            unsubscribers.push(annUnsub);
+
+            // 3. Tasks Realtime Listener
+            const tasksUnsub = db.collection("tasks").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+                allTasksCache = [];
+                snapshot.forEach((doc) => {
+                    allTasksCache.push({ id: doc.id, ...doc.data() });
+                });
+                renderQuickTasks();
+                renderAllTasks();
+            }, (error) => {
+                console.error("Tasks listener error:", error);
+            });
+            unsubscribers.push(tasksUnsub);
+
+            // 4. Withdrawals History Realtime Listener
+            const wdUnsub = db.collection("withdrawals").where("userId", "==", userId).orderBy("createdAt", "desc").limit(3).onSnapshot((snapshot) => {
+                const withdrawalsList = [];
+                snapshot.forEach((doc) => {
+                    withdrawalsList.push({ id: doc.id, ...doc.data() });
+                });
+                renderWithdrawalsHistory(withdrawalsList);
+            }, (error) => {
+                console.error("Withdrawals listener error:", error);
+                // Fallback if index missing
+                db.collection("withdrawals").where("userId", "==", userId).onSnapshot((snap) => {
+                    const list = [];
+                    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+                    renderWithdrawalsHistory(list.slice(0, 3));
+                });
+            });
+            unsubscribers.push(wdUnsub);
+        }
+
+        /* ================= RENDER DASHBOARD ================= */
+        function renderDashboard(user) {
+            document.getElementById("header-name").innerText = user.name || "User";
+            document.getElementById("header-userid").innerText = user.id;
+            if (user.photoURL) {
+                document.getElementById("header-avatar").src = user.photoURL;
+            }
+
+            document.getElementById("stat-coins").innerText = user.coins || 0;
+            document.getElementById("stat-referrals").innerText = user.reffer || 0;
+            document.getElementById("stat-withdrawals").innerText = user.totalWithdrawals || 0;
+            document.getElementById("stat-tasks").innerText = user.tasksCompleted || 0;
+
+            // Update Withdrawal balance display
+            document.getElementById("withdrawal-balance").innerText = "₹" + (user.coins || 0);
+
+            // Referral Link
+            const refLink = `https://t.me/${BOT_USERNAME}?start=${user.id}`;
+            document.getElementById("referral-link-input").value = refLink;
+        }
+
+        /* ================= RENDER ANNOUNCEMENT ================= */
+        function renderAnnouncement(ann) {
+            const banner = document.getElementById("announcement-banner");
+            document.getElementById("announcement-title").innerText = ann.title || "Announcement";
+            document.getElementById("announcement-body").innerText = ann.body || "";
+            banner.classList.remove("hidden");
+        }
+
+        /* ================= RENDER QUICK TASKS (TOP 3) ================= */
+        function renderQuickTasks() {
+            const container = document.getElementById("quick-tasks-container");
+            if (allTasksCache.length === 0) {
+                container.innerHTML = `<div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">No active tasks right now.</div>`;
+                return;
+            }
+
+            const topTasks = allTasksCache.slice(0, 3);
+            let html = "";
+            topTasks.forEach(task => {
+                html += `
+                    <div class="glass-card p-3.5 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">${escapeHtml(task.name)}</h4>
+                                <p class="text-[10px] text-slate-400">${escapeHtml(task.type)} • <span class="text-amber-400 font-semibold">+${task.reward} Coins</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${task.link ? `<a href="${escapeHtml(task.link)}" target="_blank" class="bg-dark-800 hover:bg-dark-700 text-slate-200 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-slate-700">Open</a>` : ''}
+                            <button onclick="claimTask('${task.id}', ${task.reward})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow">Claim</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        /* ================= RENDER ALL TASKS ================= */
+        function renderAllTasks(filteredList = null) {
+            const container = document.getElementById("all-tasks-container");
+            const listToRender = filteredList || allTasksCache;
+
+            if (listToRender.length === 0) {
+                container.innerHTML = `<div class="glass-card p-4 rounded-xl text-center text-slate-400 text-xs">No tasks found matching your search.</div>`;
+                return;
+            }
+
+            let html = "";
+            listToRender.forEach(task => {
+                html += `
+                    <div class="glass-card p-4 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                <i class="fa-solid fa-tasks"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">${escapeHtml(task.name)}</h4>
+                                <p class="text-[11px] text-slate-400">${escapeHtml(task.type)}</p>
+                                <p class="text-[11px] text-amber-400 font-bold mt-0.5">+${task.reward} Coins Reward</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-1.5">
+                            ${task.link ? `<a href="${escapeHtml(task.link)}" target="_blank" class="bg-dark-800 hover:bg-dark-700 text-slate-200 text-center px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700">Open Task</a>` : ''}
+                            <button onclick="claimTask('${task.id}', ${task.reward})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow">Claim Reward</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        /* ================= FILTER TASKS (SEARCH) ================= */
+        function filterTasks() {
+            const query = document.getElementById("task-search").value.toLowerCase();
+            const filtered = allTasksCache.filter(t => 
+                (t.name && t.name.toLowerCase().includes(query)) || 
+                (t.type && t.type.toLowerCase().includes(query))
+            );
+            renderAllTasks(filtered);
+        }
+
+        /* ================= CLAIM TASK (TRANSACTION + PREVENTION) ================= */
+        function claimTask(taskId, rewardAmount) {
+            if (!db) return;
+            const userId = tgUser.id;
+            const claimId = `${userId}_${taskId}`;
+            const claimRef = db.collection("user_claims").doc(claimId);
+            const userRef = db.collection("users").doc(userId);
+
+            db.runTransaction((transaction) => {
+                return transaction.get(claimRef).then((claimDoc) => {
+                    if (claimDoc.exists) {
+                        throw new Error("ALREADY_CLAIMED");
+                    }
+                    // Create claim record
+                    transaction.set(claimRef, {
+                        userId: userId,
+                        taskId: taskId,
+                        claimedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // Update user coins and tasksCompleted
+                    transaction.update(userRef, {
+                        coins: firebase.firestore.FieldValue.increment(rewardAmount),
+                        tasksCompleted: firebase.firestore.FieldValue.increment(1)
+                    });
+                });
+            }).then(() => {
+                showToast(`Successfully claimed +${rewardAmount} coins!`, "success");
+            }).catch((err) => {
+                if (err.message === "ALREADY_CLAIMED") {
+                    showToast("You have already claimed this task!", "error");
+                } else {
+                    console.error("Claim transaction error:", err);
+                    showToast("Failed to claim task. Try again.", "error");
+                }
+            });
+        }
+
+        /* ================= ADSGRAM INTEGRATION FOR WATCH AD ================= */
+        function watchAdsgramAd() {
+            if (typeof Adsgram !== 'undefined') {
+                // Initialize Adsgram block (replace blockId as per production requirements)
+                const adController = Adsgram.init({ blockId: "int-7269" }); // Demo block ID
+                adController.show().then(() => {
+                    // Ad completed successfully -> Reward user +50 coins
+                    creditAdReward(50);
+                }).catch((result) => {
+                    console.warn("Ad not completed or error:", result);
+                    showToast("Ad was skipped or failed to load.", "error");
+                });
+            } else {
+                // Fallback simulator for development/testing if Adsgram script fails to load
+                console.log("Adsgram SDK not loaded, simulating ad view.");
+                showToast("Simulating Ad View...", "success");
+                setTimeout(() => {
+                    creditAdReward(50);
+                }, 1500);
+            }
+        }
+
+        function creditAdReward(amount) {
+            if (!db) return;
+            const userRef = db.collection("users").doc(tgUser.id);
+            userRef.update({
+                coins: firebase.firestore.FieldValue.increment(amount),
+                tasksCompleted: firebase.firestore.FieldValue.increment(1)
+            }).then(() => {
+                showToast(`🎉 Ad watched successfully! +${amount} coins added.`, "success");
+            }).catch(err => {
+                console.error("Ad reward error:", err);
+                showToast("Failed to credit ad reward.", "error");
+            });
+        }
+
+        /* ================= WITHDRAWAL SUBMISSION ================= */
+        function submitWithdrawal() {
+            const upi = document.getElementById("upi-input").value.trim();
+            const amountStr = document.getElementById("withdrawal-amount").value.trim();
+            const amount = parseInt(amountStr, 10);
+
+            if (!upi) {
+                showToast("Please enter a valid UPI ID", "error");
+                return;
+            }
+            if (isNaN(amount) || amount < 100) {
+                showToast("Minimum withdrawal amount is 100 Coins (₹10)", "error");
+                return;
+            }
+
+            if (!db) return;
+            const userId = tgUser.id;
+            const userRef = db.collection("users").doc(userId);
+
+            db.runTransaction((transaction) => {
+                return transaction.get(userRef).then((userDoc) => {
+                    if (!userDoc.exists) throw new Error("User not found");
+                    const currentCoins = userDoc.data().coins || 0;
+                    if (currentCoins < amount) {
+                        throw new Error("INSUFFICIENT_FUNDS");
+                    }
+
+                    // Deduct coins and increment totalWithdrawals
+                    transaction.update(userRef, {
+                        coins: firebase.firestore.FieldValue.increment(-amount),
+                        totalWithdrawals: firebase.firestore.FieldValue.increment(amount)
+                    });
+
+                    // Create withdrawal doc
+                    const wdRef = db.collection("withdrawals").doc();
+                    transaction.set(wdRef, {
+                        userId: userId,
+                        upi: upi,
+                        amount: amount,
+                        status: "pending",
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+            }).then(() => {
+                showToast("Withdrawal request submitted successfully!", "success");
+                document.getElementById("upi-input").value = "";
+                document.getElementById("withdrawal-amount").value = "";
+            }).catch((err) => {
+                if (err.message === "INSUFFICIENT_FUNDS") {
+                    showToast("Insufficient coin balance!", "error");
+                } else {
+                    console.error("Withdrawal error:", err);
+                    showToast("Withdrawal request failed. Try again.", "error");
+                }
+            });
+        }
+
+        /* ================= RENDER WITHDRAWALS HISTORY ================= */
+        function renderWithdrawalsHistory(list) {
+            const container = document.getElementById("withdrawals-history-container");
+            if (list.length === 0) {
+                container.innerHTML = `<div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">No withdrawal history found.</div>`;
+                return;
+            }
+
+            let html = "";
+            list.forEach(wd => {
+                let statusColor = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+                if (wd.status === "approved") statusColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                if (wd.status === "rejected") statusColor = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+
+                html += `
+                    <div class="glass-card p-3 rounded-xl flex items-center justify-between text-xs">
+                        <div>
+                            <p class="font-bold text-white">₹${wd.amount} <span class="text-[10px] text-slate-400 font-normal">(${wd.upi})</span></p>
+                            <p class="text-[10px] text-slate-500">ID: ${wd.id.substring(0, 8)}...</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColor}">${wd.status}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        /* ================= RENDER PROFILE ================= */
+        function renderProfile(user) {
+            document.getElementById("profile-name").innerText = user.name || "User";
+            document.getElementById("profile-userid").innerText = user.id;
+            if (user.photoURL) {
+                document.getElementById("profile-avatar").src = user.photoURL;
+            }
+            document.getElementById("profile-referredby").innerText = user.refferBy || "None";
+            document.getElementById("profile-totalref").innerText = user.reffer || 0;
+            document.getElementById("profile-coins").innerText = user.coins || 0;
+            document.getElementById("profile-withdrawals").innerText = "₹" + (user.totalWithdrawals || 0);
+            document.getElementById("profile-tasks").innerText = user.tasksCompleted || 0;
+        }
+
+        function refreshProfile() {
+            showToast("Profile data is updated in real-time!", "success");
+        }
+
+        /* ================= TAB SWITCHING ================= */
+        function switchTabs(tabName) {
+            const tabs = ['dashboard', 'tasks', 'withdrawal', 'profile'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                if (t === tabName) {
+                    el.classList.remove('hidden');
+                    nav.classList.remove('text-slate-400');
+                    nav.classList.add('text-emerald-400');
+                } else {
+                    el.classList.add('hidden');
+                    nav.classList.remove('text-emerald-400');
+                    nav.classList.add('text-slate-400');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ================= UTILITIES & HELPERS ================= */
+        function copyReferralLink() {
+            const input = document.getElementById("referral-link-input");
+            input.select();
+            input.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                showToast("Referral link copied to clipboard!", "success");
+            } catch (err) {
+                showToast("Failed to copy link", "error");
+            }
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            let bgClass = "bg-emerald-600 text-white";
+            let icon = "fa-circle-check";
+            if (type === "error") {
+                bgClass = "bg-rose-600 text-white";
+                icon = "fa-circle-exclamation";
+            }
+
+            toast.className = `${bgClass} p-3 rounded-xl shadow-lg flex items-center space-x-2 text-xs font-semibold pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i><span class="flex-1">${escapeHtml(message)}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add("translate-y-2", "opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function hideLoading() {
+            const loader = document.getElementById("loading-overlay");
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 300);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
