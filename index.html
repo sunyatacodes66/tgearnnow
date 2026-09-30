@@ -377,60 +377,124 @@
         let unsubscribers = [];
 
         // Initialize App on Window Load
-        window.onload = function() {
+        window.addEventListener("load", function() {
+            // Telegram must be initialized first so the real Telegram user
+            // is available before we talk to Firebase.
             initTelegram();
+            renderTelegramUser();
+            hideLoading();
+
+            // Firebase is only used for app data such as coins, tasks,
+            // referrals and withdrawals. The Telegram profile should not
+            // depend on Firebase being available.
             initFirebase();
             createOrFetchUser();
-        };
+        });
 
         /* ================= TELEGRAM INIT ================= */
         function initTelegram() {
             try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    const tg = window.Telegram.WebApp;
-                    tg.ready();
+                if (!window.Telegram || !window.Telegram.WebApp) {
+                    console.warn("Telegram WebApp API is not available. Open this page from your Telegram Mini App.");
+                    return;
+                }
+
+                const tg = window.Telegram.WebApp;
+
+                // Tell Telegram that the Mini App is ready.
+                tg.ready();
+
+                // Expand the Mini App when Telegram supports it.
+                if (typeof tg.expand === "function") {
                     tg.expand();
-                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                        const user = tg.initDataUnsafe.user;
-                        tgUser.id = user.id.toString();
-                        tgUser.first_name = user.first_name || "User";
-                        tgUser.photo_url = user.photo_url || "";
-                    }
-                    if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-                        startParam = tg.initDataUnsafe.start_param;
-                    }
+                }
+
+                const initData = tg.initDataUnsafe || {};
+                const user = initData.user;
+
+                if (user && user.id) {
+                    tgUser.id = String(user.id);
+                    tgUser.first_name = user.first_name || user.username || "User";
+                    tgUser.photo_url = user.photo_url || "";
+                    tgUser.username = user.username || "";
+
+                    console.log("Telegram user loaded:", tgUser);
+                } else {
+                    console.warn("Telegram opened the page, but no Telegram user was supplied.");
+                }
+
+                if (initData.start_param) {
+                    startParam = String(initData.start_param);
                 }
             } catch (e) {
-                console.log("Running outside Telegram WebApp environment", e);
+                console.error("Telegram initialization failed:", e);
+            }
+        }
+
+        /* ================= RENDER TELEGRAM USER ================= */
+        function renderTelegramUser() {
+            const nameEl = document.getElementById("header-name");
+            const idEl = document.getElementById("header-userid");
+            const avatarEl = document.getElementById("header-avatar");
+
+            // Show Telegram data immediately, before Firebase finishes.
+            if (nameEl) nameEl.innerText = tgUser.first_name || "User";
+            if (idEl) idEl.innerText = tgUser.id || "---";
+
+            if (avatarEl && tgUser.photo_url) {
+                avatarEl.src = tgUser.photo_url;
+            }
+
+            // Also update the Profile page immediately.
+            const profileName = document.getElementById("profile-name");
+            const profileId = document.getElementById("profile-userid");
+            const profileAvatar = document.getElementById("profile-avatar");
+
+            if (profileName) profileName.innerText = tgUser.first_name || "User";
+            if (profileId) profileId.innerText = tgUser.id || "---";
+            if (profileAvatar && tgUser.photo_url) {
+                profileAvatar.src = tgUser.photo_url;
             }
         }
 
         /* ================= FIREBASE INIT ================= */
         function initFirebase() {
             try {
+                if (!window.firebase) {
+                    throw new Error("Firebase SDK did not load.");
+                }
+
                 if (!firebase.apps.length) {
                     firebase.initializeApp(firebaseConfig);
                 }
+
                 db = firebase.firestore();
+                console.log("Firebase initialized successfully.");
             } catch (e) {
+                db = null;
                 console.error("Firebase initialization failed:", e);
-                showToast("Firebase initialization error", "error");
+                showToast("Firebase is unavailable. Telegram profile is still loaded.", "error");
             }
         }
 
         /* ================= CREATE OR FETCH USER ================= */
         function createOrFetchUser() {
-            if (!db) return;
-            const userRef = db.collection("users").doc(tgUser.id);
+            // Never block the Telegram profile if Firebase is unavailable.
+            if (!db) {
+                console.warn("Skipping Firebase user sync because Firestore is unavailable.");
+                return;
+            }
+
+            const userRef = db.collection("users").doc(String(tgUser.id));
 
             userRef.get().then((docSnapshot) => {
                 if (!docSnapshot.exists) {
                     // New user creation
-                    const referralByVal = (startParam && startParam !== tgUser.id) ? startParam : null;
+                    const referralByVal = (startParam && startParam !== String(tgUser.id)) ? startParam : null;
                     const newUser = {
-                        id: tgUser.id,
-                        name: tgUser.first_name,
-                        photoURL: tgUser.photo_url,
+                        id: String(tgUser.id),
+                        name: tgUser.first_name || "User",
+                        photoURL: tgUser.photo_url || "",
                         coins: 0,
                         reffer: 0,
                         refferBy: referralByVal,
@@ -448,18 +512,18 @@
                             }).catch(err => console.log("Referrer update failed:", err));
                         }
                         setupRealtimeListeners();
-                        hideLoading();
                     }).catch(err => {
                         console.error("Error creating user:", err);
-                        hideLoading();
+                        showToast("Could not save your profile data.", "error");
                     });
                 } else {
                     setupRealtimeListeners();
-                    hideLoading();
                 }
             }).catch(err => {
+                // IMPORTANT: do not hide/replace the Telegram profile when
+                // Firestore permissions, network or indexing cause an error.
                 console.error("Error fetching user:", err);
-                hideLoading();
+                showToast("Firebase sync failed. Telegram profile is still available.", "error");
             });
         }
 
