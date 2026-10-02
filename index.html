@@ -1336,16 +1336,20 @@ if (typeof show_11933837 !== "function") {
 }
 
 // Show Monetag rewarded interstitial.
-await show_11933837();
+show_11933837().then(() => {
+    adProviderCompleted = true;
+
+    document.getElementById("ad-reward-status").innerText =
+        "Ad completed. Waiting for timer...";
+
+    attemptAdCompletion();
+}).catch((error) => {
+    console.error("Monetag ad error:", error);
+});
 
 // NOTE: Monetag reported successful ad completion.
 // No coins are credited here; backend completion is still required.
-adProviderCompleted = true;
 
-document.getElementById("ad-reward-status").innerText =
-    "Ad completed. Waiting for timer...";
-
-attemptAdCompletion();
 
     } catch (error) {
         console.error("Ad failed or was closed:", error);
