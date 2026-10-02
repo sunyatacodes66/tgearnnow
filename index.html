@@ -692,22 +692,157 @@ function getTelegramInitData() {
             unsubscribers.push(tasksUnsub);
 
             // 4. Withdrawals History Realtime Listener
-            const wdUnsub = db.collection("withdrawals").where("userId", "==", userId).orderBy("createdAt", "desc").limit(3).onSnapshot((snapshot) => {
-                const withdrawalsList = [];
-                snapshot.forEach((doc) => {
-                    withdrawalsList.push({ id: doc.id, ...doc.data() });
-                });
-                renderWithdrawalsHistory(withdrawalsList);
-            }, (error) => {
-                console.error("Withdrawals listener error:", error);
-                // Fallback if index missing
-                db.collection("withdrawals").where("userId", "==", userId).onSnapshot((snap) => {
-                    const list = [];
-                    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-                    renderWithdrawalsHistory(list.slice(0, 3));
-                });
-            });
-            unsubscribers.push(wdUnsub);
+           // 4. Withdrawals History Realtime Listener
+const wdUnsubNew = db.collection("withdrawals")
+    .where("user_id", "==", userId)
+    .onSnapshot((snapshot) => {
+
+        loadWithdrawalHistory();
+
+    }, (error) => {
+
+        console.error(
+            "New withdrawal history listener error:",
+            error
+        );
+
+        loadWithdrawalHistory();
+
+    });
+
+
+const wdUnsubOld = db.collection("withdrawals")
+    .where("userId", "==", userId)
+    .onSnapshot((snapshot) => {
+
+        loadWithdrawalHistory();
+
+    }, (error) => {
+
+        console.error(
+            "Old withdrawal history listener error:",
+            error
+        );
+
+        loadWithdrawalHistory();
+
+    });
+
+
+async function loadWithdrawalHistory() {
+
+    try {
+
+        const [newSnapshot, oldSnapshot] =
+            await Promise.all([
+                db.collection("withdrawals")
+                    .where("user_id", "==", userId)
+                    .get(),
+
+                db.collection("withdrawals")
+                    .where("userId", "==", userId)
+                    .get()
+            ]);
+
+
+        const withdrawalsMap = new Map();
+
+
+        // New canonical records
+        newSnapshot.forEach((doc) => {
+
+            withdrawalsMap.set(
+                doc.id,
+                {
+                    id: doc.id,
+                    ...doc.data()
+                }
+            );
+
+        });
+
+
+        // Old records
+        oldSnapshot.forEach((doc) => {
+
+            if (!withdrawalsMap.has(doc.id)) {
+
+                withdrawalsMap.set(
+                    doc.id,
+                    {
+                        id: doc.id,
+                        ...doc.data()
+                    }
+                );
+
+            }
+
+        });
+
+
+        const withdrawalsList =
+            Array.from(withdrawalsMap.values());
+
+
+        // Support both old and new timestamp fields
+        withdrawalsList.sort((a, b) => {
+
+            const getTime = (wd) => {
+
+                const timestamp =
+                    wd.created_at ??
+                    wd.createdAt;
+
+                if (timestamp?.toMillis) {
+                    return timestamp.toMillis();
+                }
+
+                if (timestamp instanceof Date) {
+                    return timestamp.getTime();
+                }
+
+                if (typeof timestamp === "number") {
+                    return timestamp;
+                }
+
+                return 0;
+            };
+
+
+            return getTime(b) - getTime(a);
+
+        });
+
+
+        renderWithdrawalsHistory(
+            withdrawalsList.slice(0, 3)
+        );
+
+
+        // Only APPROVED withdrawals count
+        // toward Total Cashed Out.
+        renderApprovedWithdrawalTotal(
+            withdrawalsList
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Withdrawal history load error:",
+            error
+        );
+
+        renderWithdrawalsHistory([]);
+        renderApprovedWithdrawalTotal([]);
+
+    }
+
+}
+
+
+unsubscribers.push(wdUnsubNew);
+unsubscribers.push(wdUnsubOld);
         }
 
         /* ================= RENDER DASHBOARD ================= */
@@ -724,7 +859,7 @@ const currentCoins = Number(user.coins) || 0;
 document.getElementById("stat-coins").innerText =
     `${currentCoins} coins (${formatRupeesFromCoins(currentCoins)})`;
             document.getElementById("stat-referrals").innerText = user.reffer || 0;
-            document.getElementById("stat-withdrawals").innerText = user.totalWithdrawals || 0;
+            document.getElementById("stat-withdrawals").innerText = "₹0.00";
             document.getElementById("stat-tasks").innerText = user.tasksCompleted || 0;
 
             // Update Withdrawal balance display
@@ -1086,90 +1221,343 @@ document.getElementById("ad-close-button").addEventListener(
         resetAdOverlay();
     }
 );
-        
-        /* ================= WITHDRAWAL SUBMISSION ================= */
-        function submitWithdrawal() {
-            const upi = document.getElementById("upi-input").value.trim();
-            const amountStr = document.getElementById("withdrawal-amount").value.trim();
-            const amount = parseInt(amountStr, 10);
 
-            if (!upi) {
-                showToast("Please enter a valid UPI ID", "error");
-                return;
-            }
-            if (isNaN(amount) || amount < 100) {
-                showToast("Minimum withdrawal amount is 3000 Coins (₹300)", "error");
-                return;
-            }
+        /* ================= SECURE WITHDRAWAL SUBMISSION ================= */
 
-            if (!db) return;
-            const userId = tgUser.id;
-            const userRef = db.collection("users").doc(userId);
+async function submitWithdrawal() {
 
-            db.runTransaction((transaction) => {
-                return transaction.get(userRef).then((userDoc) => {
-                    if (!userDoc.exists) throw new Error("User not found");
-                    const currentCoins = userDoc.data().coins || 0;
-                    if (currentCoins < amount) {
-                        throw new Error("INSUFFICIENT_FUNDS");
-                    }
+    const upiInput =
+        document.getElementById("upi-input");
 
-                    // Deduct coins and increment totalWithdrawals
-                    transaction.update(userRef, {
-                        coins: firebase.firestore.FieldValue.increment(-amount),
-                        totalWithdrawals: firebase.firestore.FieldValue.increment(amount)
-                    });
+    const amountInput =
+        document.getElementById("withdrawal-amount");
 
-                    // Create withdrawal doc
-                    const wdRef = db.collection("withdrawals").doc();
-                    transaction.set(wdRef, {
-                        userId: userId,
-                        upi: upi,
-                        amount: amount,
-                        status: "pending",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                });
-            }).then(() => {
-                showToast("Withdrawal request submitted successfully!", "success");
-                document.getElementById("upi-input").value = "";
-                document.getElementById("withdrawal-amount").value = "";
-            }).catch((err) => {
-                if (err.message === "INSUFFICIENT_FUNDS") {
-                    showToast("Insufficient coin balance!", "error");
-                } else {
-                    console.error("Withdrawal error:", err);
-                    showToast("Withdrawal request failed. Try again.", "error");
+    const upi =
+        upiInput.value.trim();
+
+    const amountStr =
+        amountInput.value.trim();
+
+    const amount =
+        parseInt(amountStr, 10);
+
+
+    // ================= BASIC FRONTEND VALIDATION =================
+
+    if (!upi) {
+        showToast(
+            "Please enter a valid UPI ID.",
+            "error"
+        );
+        return;
+    }
+
+    if (!amount || amount < 3000) {
+        showToast(
+            "Minimum withdrawal is 3000 Coins (₹300).",
+            "error"
+        );
+        return;
+    }
+
+
+    // ================= TELEGRAM AUTH =================
+
+    let initData;
+
+    try {
+
+        initData =
+            getTelegramInitData();
+
+    } catch (error) {
+
+        console.error(
+            "Telegram auth error:",
+            error
+        );
+
+        showToast(
+            "Telegram verification failed. Please reopen the Mini App.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // ================= SEND REQUEST TO BACKEND =================
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/withdraw/request",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        initData: initData,
+                        coins: amount,
+                        upi: upi
+                    })
                 }
-            });
-        }
+            );
 
-        /* ================= RENDER WITHDRAWALS HISTORY ================= */
-        function renderWithdrawalsHistory(list) {
-            const container = document.getElementById("withdrawals-history-container");
-            if (list.length === 0) {
-                container.innerHTML = `<div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">No withdrawal history found.</div>`;
-                return;
+
+        const result =
+            await response.json();
+
+
+        // ================= BACKEND ERROR =================
+
+        if (!response.ok || !result.ok) {
+
+            const errorCode =
+                result.error || "";
+
+            if (
+                errorCode ===
+                "INSUFFICIENT_BALANCE"
+            ) {
+
+                showToast(
+                    "Insufficient coin balance.",
+                    "error"
+                );
+
+            } else if (
+                errorCode ===
+                "MINIMUM_WITHDRAWAL_NOT_MET"
+            ) {
+
+                showToast(
+                    "Minimum withdrawal is 3000 Coins (₹300).",
+                    "error"
+                );
+
+            } else if (
+                errorCode ===
+                "MINIMUM_REFERRALS_NOT_MET"
+            ) {
+
+                showToast(
+                    "You need at least 6 referrals.",
+                    "error"
+                );
+
+            } else if (
+                errorCode ===
+                "INVALID_UPI"
+            ) {
+
+                showToast(
+                    "Please enter a valid UPI ID.",
+                    "error"
+                );
+
+            } else {
+
+                showToast(
+                    result.message ||
+                    "Withdrawal request failed. Please try again.",
+                    "error"
+                );
             }
 
-            let html = "";
-            list.forEach(wd => {
-                let statusColor = "text-amber-400 bg-amber-500/10 border-amber-500/20";
-                if (wd.status === "approved") statusColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-                if (wd.status === "rejected") statusColor = "text-rose-400 bg-rose-500/10 border-rose-500/20";
-
-                html += `
-                    <div class="glass-card p-3 rounded-xl flex items-center justify-between text-xs">
-                        <div>
-                            <p class="font-bold text-white">${formatRupeesFromCoins(wd.amount)} <span class="text-[10px] text-slate-400 font-normal">(${wd.upi})</span></p>
-                            <p class="text-[10px] text-slate-500">ID: ${wd.id.substring(0, 8)}...</p>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColor}">${wd.status}</span>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
+            return;
         }
+
+
+        // ================= SUCCESS =================
+
+        showToast(
+            "Withdrawal request submitted successfully!",
+            "success"
+        );
+
+
+        // Clear form only after backend success.
+        upiInput.value = "";
+        amountInput.value = "";
+
+
+        console.log(
+            "Withdrawal request created:",
+            result
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Withdrawal request error:",
+            error
+        );
+
+        showToast(
+            "Network error. Please try again.",
+            "error"
+        );
+    }
+}
+       
+       /* ================= RENDER WITHDRAWALS HISTORY ================= */
+
+function renderWithdrawalsHistory(list) {
+
+    const container =
+        document.getElementById(
+            "withdrawals-history-container"
+        );
+
+    if (!list || list.length === 0) {
+
+        container.innerHTML = `
+            <div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">
+                No withdrawal history found.
+            </div>
+        `;
+
+        return;
+    }
+
+    let html = "";
+
+    list.forEach(wd => {
+
+        // New canonical fields
+        // Old fields are supported for compatibility.
+        const coins = Number(
+            wd.coins ??
+            wd.amount ??
+            0
+        );
+
+        const amountRs =
+            wd.amount_rs != null
+                ? Number(wd.amount_rs)
+                : coinsToRupees(coins);
+
+        let status =
+            String(
+                wd.status || "PENDING"
+            ).toUpperCase();
+
+        let statusColor =
+            "text-amber-400 bg-amber-500/10 border-amber-500/20";
+
+        if (status === "APPROVED") {
+            statusColor =
+                "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+        }
+
+        if (status === "REJECTED") {
+            statusColor =
+                "text-rose-400 bg-rose-500/10 border-rose-500/20";
+        }
+
+        const upi =
+            escapeHtml(
+                wd.upi || "N/A"
+            );
+
+        html += `
+            <div class="glass-card p-3 rounded-xl flex items-center justify-between text-xs">
+
+                <div>
+                    <p class="font-bold text-white">
+                        ${formatRupeesFromCoins(coins)}
+                        <span class="text-[10px] text-slate-400 font-normal">
+                            (${coins} coins)
+                        </span>
+                    </p>
+
+                    <p class="text-[10px] text-slate-400 mt-0.5">
+                        UPI: ${upi}
+                    </p>
+
+                    <p class="text-[10px] text-slate-500">
+                        ₹${amountRs.toFixed(2)}
+                    </p>
+
+                    <p class="text-[10px] text-slate-500">
+                        ID: ${escapeHtml(wd.id.substring(0, 8))}...
+                    </p>
+                </div>
+
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColor}">
+                    ${status}
+                </span>
+
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+/* ================= APPROVED WITHDRAWAL TOTAL ================= */
+
+function renderApprovedWithdrawalTotal(list) {
+
+    let approvedCoins = 0;
+
+    list.forEach(wd => {
+
+        const status =
+            String(
+                wd.status || ""
+            ).toUpperCase();
+
+        if (status !== "APPROVED") {
+            return;
+        }
+
+        // New schema first, old schema fallback.
+        const coins = Number(
+            wd.coins ??
+            wd.amount ??
+            0
+        );
+
+        approvedCoins += coins;
+    });
+
+    const rupees =
+        coinsToRupees(approvedCoins);
+
+    // Dashboard
+    const dashboardEl =
+        document.getElementById(
+            "stat-withdrawals"
+        );
+
+    if (dashboardEl) {
+        dashboardEl.innerText =
+            formatRupeesFromCoins(
+                approvedCoins
+            );
+    }
+
+    // Profile
+    const profileEl =
+        document.getElementById(
+            "profile-withdrawals"
+        );
+
+    if (profileEl) {
+        profileEl.innerText =
+            formatRupeesFromCoins(
+                approvedCoins
+            );
+    }
+}
+        
 
         /* ================= RENDER PROFILE ================= */
         function renderProfile(user) {
@@ -1181,8 +1569,8 @@ document.getElementById("ad-close-button").addEventListener(
             document.getElementById("profile-referredby").innerText = user.refferBy || "None";
             document.getElementById("profile-totalref").innerText = user.reffer || 0;
             document.getElementById("profile-coins").innerText = user.coins || 0;
-            document.getElementById("profile-withdrawals").innerText =
-    formatRupeesFromCoins(user.totalWithdrawals);
+           document.getElementById("profile-withdrawals").innerText =
+    "₹0.00";
             document.getElementById("profile-tasks").innerText = user.tasksCompleted || 0;
         }
 
