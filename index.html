@@ -221,8 +221,60 @@
             <!-- Balance Card -->
             <div class="glass-card rounded-2xl p-5 text-center relative overflow-hidden bg-gradient-to-b from-emerald-950/40 to-slate-900/60">
                 <p class="text-xs text-slate-400 uppercase tracking-wider mb-1 font-semibold">Withdrawable Balance</p>
-                <h3 id="withdrawal-balance" class="text-3xl font-black text-white">₹0</h3>
-                <p class="text-[10px] text-slate-400 mt-1">Minimum withdrawal: ₹300 (10 Coins = ₹1)</p>
+               <!-- NOTE: Displays the live withdrawal balance in rupees. -->
+<h3 id="withdrawal-balance" class="text-3xl font-black text-white">₹0.00</h3>
+                <!-- NOTE: Withdrawal balance and eligibility progress.
+     Balance requirement = ₹300 and referral requirement = 6.
+     Button ko disable nahi kiya ja raha hai. -->
+
+
+<p class="text-[10px] text-slate-400 mt-1">
+    Minimum withdrawal: ₹300
+</p>
+
+<!-- NOTE: Shows progress toward the ₹300 minimum balance requirement. -->
+<div class="mt-4 space-y-3 text-left">
+
+    <div>
+        <div class="flex justify-between text-[10px] mb-1">
+            <span class="text-slate-400">Balance Progress</span>
+
+            <span id="withdraw-balance-progress-text"
+                  class="text-emerald-400">
+                ₹0.00 / ₹300
+            </span>
+        </div>
+
+        <div class="w-full h-2 bg-dark-800 rounded-full overflow-hidden">
+            <div
+                id="withdraw-balance-progress"
+                class="h-full bg-emerald-500 rounded-full"
+                style="width:0%"
+            ></div>
+        </div>
+    </div>
+
+    <!-- NOTE: Shows progress toward the 6-referral requirement. -->
+    <div>
+        <div class="flex justify-between text-[10px] mb-1">
+            <span class="text-slate-400">Referral Progress</span>
+
+            <span id="withdraw-referral-progress-text"
+                  class="text-blue-400">
+                0 / 6
+            </span>
+        </div>
+
+        <div class="w-full h-2 bg-dark-800 rounded-full overflow-hidden">
+            <div
+                id="withdraw-referral-progress"
+                class="h-full bg-blue-500 rounded-full"
+                style="width:0%"
+            ></div>
+        </div>
+    </div>
+
+</div>
             </div>
 
             <!-- Withdrawal Form -->
