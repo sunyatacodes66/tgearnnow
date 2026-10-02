@@ -340,6 +340,51 @@
         </div>
     </nav>
 
+<!-- NOTE: Fullscreen ad-reward overlay.
+     User cannot close it until the server-required timer is complete
+     and the ad completion has been confirmed. -->
+<div id="ad-reward-overlay"
+     class="hidden fixed inset-0 z-[9999] bg-black/95 flex flex-col">
+
+    <!-- NOTE: Countdown shown in the upper-right corner. -->
+    <div class="absolute top-5 right-5">
+        <div id="ad-countdown"
+             class="bg-slate-900/90 border border-emerald-500/40
+                    text-emerald-400 font-bold text-sm px-3 py-2 rounded-xl">
+            00:30
+        </div>
+    </div>
+
+    <!-- NOTE: Center area explains that the reward is being verified. -->
+    <div class="flex-1 flex items-center justify-center px-6 text-center">
+        <div>
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl
+                        bg-emerald-500/10 flex items-center justify-center">
+                <i class="fa-solid fa-tv text-emerald-400 text-2xl"></i>
+            </div>
+
+            <h3 class="text-white font-bold text-lg">
+                Watching Sponsored Ad
+            </h3>
+
+            <p id="ad-reward-status"
+               class="text-slate-400 text-xs mt-2">
+                Please wait until the timer completes.
+            </p>
+        </div>
+    </div>
+
+    <!-- NOTE: Close button remains disabled until reward verification succeeds. -->
+    <div class="absolute bottom-5 left-5">
+        <button id="ad-close-button"
+                disabled
+                class="bg-slate-800 text-slate-500 font-bold text-xs
+                       px-4 py-2.5 rounded-xl opacity-60 cursor-not-allowed">
+            Close
+        </button>
+    </div>
+</div>
+    
     <script>
         /* BOT_USERNAME placeholder: REPLACE_WITH_YOUR_BOT_USERNAME */
         const BOT_USERNAME = "Earn_4now_bot";
@@ -398,6 +443,25 @@ function coinsToRupees(coins) {
 function formatRupeesFromCoins(coins) {
     return `₹${coinsToRupees(coins).toFixed(2)}`;
 }
+
+
+// NOTE: Returns Telegram's signed initData.
+// Backend uses this to verify that the request really comes from this Telegram user.
+function getTelegramInitData() {
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        throw new Error("Telegram WebApp is not available.");
+    }
+
+    const initData = window.Telegram.WebApp.initData;
+
+    if (!initData) {
+        throw new Error("Telegram initData is unavailable.");
+    }
+
+    return initData;
+}
+
+        
         /* ================= TELEGRAM INIT ================= */
         function initTelegram() {
             try {
@@ -710,42 +774,267 @@ document.getElementById("stat-coins").innerText =
             });
         }
 
-        /* ================= ADSGRAM INTEGRATION FOR WATCH AD ================= */
-        function watchAdsgramAd() {
-            if (typeof Adsgram !== 'undefined') {
-                // Initialize Adsgram block (replace blockId as per production requirements)
-                const adController = Adsgram.init({ blockId: "int-7269" }); // Demo block ID
-                adController.show().then(() => {
-                    // Ad completed successfully -> Reward user +50 coins
-                    creditAdReward(50);
-                }).catch((result) => {
-                    console.warn("Ad not completed or error:", result);
-                    showToast("Ad was skipped or failed to load.", "error");
-                });
-            } else {
-                // Fallback simulator for development/testing if Adsgram script fails to load
-                console.log("Adsgram SDK not loaded, simulating ad view.");
-                showToast("Simulating Ad View...", "success");
-                setTimeout(() => {
-                    creditAdReward(50);
-                }, 1500);
-            }
+/* ================= SECURE ADSGRAM REWARD SYSTEM ================= */
+
+// NOTE: Stores the currently active ad session and its completion state.
+// Coins are NOT credited from the frontend.
+let activeAdSessionId = null;
+let adTimerInterval = null;
+let adTimerFinished = false;
+let adProviderCompleted = false;
+let adCompletionInProgress = false;
+
+
+// NOTE: Formats seconds as MM:SS for the fullscreen ad countdown.
+function formatAdCountdown(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+
+// NOTE: Resets the ad overlay state before a new sponsored ad starts.
+function resetAdOverlay() {
+    activeAdSessionId = null;
+    adTimerFinished = false;
+    adProviderCompleted = false;
+    adCompletionInProgress = false;
+
+    if (adTimerInterval) {
+        clearInterval(adTimerInterval);
+        adTimerInterval = null;
+    }
+
+    const overlay = document.getElementById("ad-reward-overlay");
+    const closeButton = document.getElementById("ad-close-button");
+    const countdown = document.getElementById("ad-countdown");
+    const status = document.getElementById("ad-reward-status");
+
+    overlay.classList.add("hidden");
+
+    countdown.innerText = "00:30";
+
+    closeButton.disabled = true;
+    closeButton.classList.add(
+        "opacity-60",
+        "cursor-not-allowed",
+        "text-slate-500"
+    );
+    closeButton.classList.remove("text-white");
+
+    status.innerText = "Please wait until the timer completes.";
+}
+
+
+// NOTE: Starts the visible 30-second countdown.
+// This timer is only the UI timer; the backend performs the real security check.
+function startAdCountdown() {
+    let remainingSeconds = 30;
+
+    const countdown = document.getElementById("ad-countdown");
+
+    countdown.innerText = formatAdCountdown(remainingSeconds);
+
+    adTimerInterval = setInterval(() => {
+        remainingSeconds--;
+
+        countdown.innerText = formatAdCountdown(
+            Math.max(remainingSeconds, 0)
+        );
+
+        if (remainingSeconds <= 0) {
+            clearInterval(adTimerInterval);
+            adTimerInterval = null;
+
+            adTimerFinished = true;
+
+            document.getElementById("ad-reward-status").innerText =
+                "Checking ad completion...";
+
+            attemptAdCompletion();
+        }
+    }, 1000);
+}
+
+
+// NOTE: Calls the backend only after BOTH conditions are satisfied:
+// 1. 30-second timer completed.
+// 2. Adsgram reported successful ad completion.
+async function attemptAdCompletion() {
+    if (
+        !activeAdSessionId ||
+        !adTimerFinished ||
+        !adProviderCompleted ||
+        adCompletionInProgress
+    ) {
+        return;
+    }
+
+    adCompletionInProgress = true;
+
+    try {
+        const initData = getTelegramInitData();
+
+        const response = await fetch("/api/ad/complete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                initData: initData,
+                session_id: activeAdSessionId
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.error || "Ad reward verification failed."
+            );
         }
 
-        function creditAdReward(amount) {
-            if (!db) return;
-            const userRef = db.collection("users").doc(tgUser.id);
-            userRef.update({
-                coins: firebase.firestore.FieldValue.increment(amount),
-                tasksCompleted: firebase.firestore.FieldValue.increment(1)
-            }).then(() => {
-                showToast(`🎉 Ad watched successfully! +${amount} coins added.`, "success");
-            }).catch(err => {
-                console.error("Ad reward error:", err);
-                showToast("Failed to credit ad reward.", "error");
-            });
+        // NOTE: Reward has now been credited by the backend.
+        document.getElementById("ad-reward-status").innerText =
+            "Ad completed! +50 Coins added.";
+
+        const closeButton = document.getElementById("ad-close-button");
+
+        closeButton.disabled = false;
+
+        closeButton.classList.remove(
+            "opacity-60",
+            "cursor-not-allowed",
+            "text-slate-500"
+        );
+
+        closeButton.classList.add("text-white");
+
+        showToast("🎉 Ad watched successfully! +50 coins added.", "success");
+
+    } catch (error) {
+        console.error("Ad completion error:", error);
+
+        document.getElementById("ad-reward-status").innerText =
+            "Reward verification failed.";
+
+        showToast(
+            "Ad reward could not be verified. Please try again.",
+            "error"
+        );
+
+    } finally {
+        adCompletionInProgress = false;
+    }
+}
+
+
+// NOTE: Starts a secure backend ad session before showing Adsgram.
+// The backend creates the session and records the official start time.
+async function watchAdsgramAd() {
+    if (activeAdSessionId) {
+        return;
+    }
+
+    resetAdOverlay();
+
+    try {
+        const initData = getTelegramInitData();
+
+        const response = await fetch("/api/ad/start", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                initData: initData
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.error || "Unable to start ad session."
+            );
         }
 
+        // NOTE: Save the server-created session ID.
+        activeAdSessionId = result.session_id;
+
+        const overlay = document.getElementById("ad-reward-overlay");
+
+        overlay.classList.remove("hidden");
+
+        // NOTE: Start the visible timer immediately after the backend
+        // confirms that the ad session has been created.
+        startAdCountdown();
+
+        if (typeof Adsgram === "undefined") {
+            throw new Error("Adsgram SDK is not available.");
+        }
+
+        // NOTE: Adsgram completion is required in addition to the timer.
+        const adController = Adsgram.init({
+            blockId: "int-7269"
+        });
+
+        await adController.show();
+
+        // NOTE: Adsgram successfully completed the ad.
+        // No coins are credited here; backend completion is still required.
+        adProviderCompleted = true;
+
+        document.getElementById("ad-reward-status").innerText =
+            "Ad completed. Waiting for timer...";
+
+        attemptAdCompletion();
+
+    } catch (error) {
+        console.error("Ad failed or was closed:", error);
+
+        // NOTE: If the user skips/closes the ad before successful completion,
+        // the reward is never sent to the backend.
+        if (adTimerInterval) {
+            clearInterval(adTimerInterval);
+            adTimerInterval = null;
+        }
+
+        activeAdSessionId = null;
+        adTimerFinished = false;
+        adProviderCompleted = false;
+
+        document.getElementById("ad-reward-overlay")
+            .classList.add("hidden");
+
+        showToast(
+            "Ad was skipped or failed. No coins were added.",
+            "error"
+        );
+    }
+}
+
+
+// NOTE: Allows closing the overlay ONLY after backend reward verification
+// has succeeded. Before that, the button remains disabled.
+document.getElementById("ad-close-button").addEventListener(
+    "click",
+    () => {
+        if (adCompletionInProgress) {
+            return;
+        }
+
+        const button = document.getElementById("ad-close-button");
+
+        if (button.disabled) {
+            return;
+        }
+
+        resetAdOverlay();
+    }
+);
+        
         /* ================= WITHDRAWAL SUBMISSION ================= */
         function submitWithdrawal() {
             const upi = document.getElementById("upi-input").value.trim();
@@ -919,6 +1208,9 @@ document.getElementById("stat-coins").innerText =
             if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
+
+        
     </script>
+    
 </body>
 </html>
