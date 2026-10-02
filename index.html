@@ -154,18 +154,7 @@
                 </div>
             </div>
 
-            <!-- Quick Action Tasks -->
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-sm text-slate-200"><i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Featured Tasks</h3>
-                    <button onclick="switchTabs('tasks')" class="text-xs text-emerald-400 font-semibold hover:underline">View All</button>
-                </div>
-                <div id="quick-tasks-container" class="space-y-2.5">
-                    <!-- Rendered dynamically -->
-                    <div class="glass-card p-3.5 rounded-xl text-center text-slate-400 text-xs">Loading featured tasks...</div>
-                </div>
-            </div>
-
+           
             <!-- Referral Link Widget -->
             <div class="glass-card p-4 rounded-xl space-y-2.5 bg-gradient-to-br from-emerald-900/20 to-slate-900/40">
                 <h3 class="font-bold text-sm text-white"><i class="fa-solid fa-share-nodes text-emerald-400 mr-1.5"></i> Invite & Earn</h3>
@@ -580,7 +569,6 @@ function formatRupeesFromCoins(coins) {
                 snapshot.forEach((doc) => {
                     allTasksCache.push({ id: doc.id, ...doc.data() });
                 });
-                renderQuickTasks();
                 renderAllTasks();
             }, (error) => {
                 console.error("Tasks listener error:", error);
@@ -638,38 +626,6 @@ document.getElementById("stat-coins").innerText =
             document.getElementById("announcement-title").innerText = ann.title || "Announcement";
             document.getElementById("announcement-body").innerText = ann.body || "";
             banner.classList.remove("hidden");
-        }
-
-        /* ================= RENDER QUICK TASKS (TOP 3) ================= */
-        function renderQuickTasks() {
-            const container = document.getElementById("quick-tasks-container");
-            if (allTasksCache.length === 0) {
-                container.innerHTML = `<div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">No active tasks right now.</div>`;
-                return;
-            }
-
-            const topTasks = allTasksCache.slice(0, 3);
-            let html = "";
-            topTasks.forEach(task => {
-                html += `
-                    <div class="glass-card p-3.5 rounded-xl flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                                <i class="fa-solid fa-circle-check"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-xs text-white">${escapeHtml(task.name)}</h4>
-                                <p class="text-[10px] text-slate-400">${escapeHtml(task.type)} • <span class="text-amber-400 font-semibold">+${task.reward} Coins</span></p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            ${task.link ? `<a href="${escapeHtml(task.link)}" target="_blank" class="bg-dark-800 hover:bg-dark-700 text-slate-200 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-slate-700">Open</a>` : ''}
-                            <button onclick="claimTask('${task.id}', ${task.reward})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow">Claim</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
         }
 
         /* ================= RENDER ALL TASKS ================= */
