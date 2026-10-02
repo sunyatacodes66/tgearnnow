@@ -56,7 +56,6 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* Glassmorphism card effect */
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
@@ -80,7 +79,6 @@
 
         <!-- ================= TAB 1: USER DASHBOARD ================= -->
         <div id="tab-dashboard" class="space-y-5">
-            <!-- Header Profile Section -->
             <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg">
                 <div class="flex items-center space-x-3">
                     <img id="header-avatar" src="https://placehold.co/100x100/1e293b/10b981?text=U" alt="Profile" class="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-md">
@@ -108,7 +106,7 @@
                 </div>
             </div>
 
-            <!-- Statistics Grid (4 Cards) -->
+            <!-- Statistics Grid -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
                     <div class="flex items-center justify-between text-slate-400 mb-2">
@@ -138,7 +136,7 @@
                         <i class="fa-solid fa-wallet text-purple-400"></i>
                     </div>
                     <div>
-                        <h3 id="stat-withdrawals" class="text-2xl font-black text-white">0</h3>
+                        <h3 id="stat-withdrawals" class="text-2xl font-black text-white">₹0.00</h3>
                         <p class="text-[10px] text-purple-400 font-medium">Total Cashed Out</p>
                     </div>
                 </div>
@@ -155,7 +153,6 @@
                 </div>
             </div>
 
-           
             <!-- Referral Link Widget -->
             <div class="glass-card p-4 rounded-xl space-y-2.5 bg-gradient-to-br from-emerald-900/20 to-slate-900/40">
                 <h3 class="font-bold text-sm text-white"><i class="fa-solid fa-share-nodes text-emerald-400 mr-1.5"></i> Invite & Earn</h3>
@@ -186,7 +183,7 @@
                 <input type="text" id="task-search" oninput="filterTasks()" placeholder="Search tasks by name or type..." class="w-full bg-dark-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
             </div>
 
-            <!-- Permanent Watch Ad Task Card (Adsgram Integrated) -->
+            <!-- Permanent Watch Ad Task Card -->
             <div class="glass-card rounded-xl p-4 border border-emerald-500/40 bg-gradient-to-r from-emerald-950/60 to-slate-900/60 shadow-lg relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-emerald-500 text-dark-900 font-extrabold text-[9px] uppercase px-2.5 py-0.5 rounded-bl-lg">Featured</div>
                 <div class="flex items-center justify-between">
@@ -222,60 +219,30 @@
             <!-- Balance Card -->
             <div class="glass-card rounded-2xl p-5 text-center relative overflow-hidden bg-gradient-to-b from-emerald-950/40 to-slate-900/60">
                 <p class="text-xs text-slate-400 uppercase tracking-wider mb-1 font-semibold">Withdrawable Balance</p>
-               <!-- NOTE: Displays the live withdrawal balance in rupees. -->
-<h3 id="withdrawal-balance" class="text-3xl font-black text-white">₹0.00</h3>
-                <!-- NOTE: Withdrawal balance and eligibility progress.
-     Balance requirement = ₹300 and referral requirement = 6.
-     Button ko disable nahi kiya ja raha hai. -->
+                <h3 id="withdrawal-balance" class="text-3xl font-black text-white">₹0.00</h3>
+                <p class="text-[10px] text-slate-400 mt-1">Minimum withdrawal: ₹300</p>
 
+                <div class="mt-4 space-y-3 text-left">
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1">
+                            <span class="text-slate-400">Balance Progress</span>
+                            <span id="withdraw-balance-progress-text" class="text-emerald-400">₹0.00 / ₹300</span>
+                        </div>
+                        <div class="w-full h-2 bg-dark-800 rounded-full overflow-hidden">
+                            <div id="withdraw-balance-progress" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div>
+                        </div>
+                    </div>
 
-<p class="text-[10px] text-slate-400 mt-1">
-    Minimum withdrawal: ₹300
-</p>
-
-<!-- NOTE: Shows progress toward the ₹300 minimum balance requirement. -->
-<div class="mt-4 space-y-3 text-left">
-
-    <div>
-        <div class="flex justify-between text-[10px] mb-1">
-            <span class="text-slate-400">Balance Progress</span>
-
-            <span id="withdraw-balance-progress-text"
-                  class="text-emerald-400">
-                ₹0.00 / ₹300
-            </span>
-        </div>
-
-        <div class="w-full h-2 bg-dark-800 rounded-full overflow-hidden">
-            <div
-                id="withdraw-balance-progress"
-                class="h-full bg-emerald-500 rounded-full"
-                style="width:0%"
-            ></div>
-        </div>
-    </div>
-
-    <!-- NOTE: Shows progress toward the 6-referral requirement. -->
-    <div>
-        <div class="flex justify-between text-[10px] mb-1">
-            <span class="text-slate-400">Referral Progress</span>
-
-            <span id="withdraw-referral-progress-text"
-                  class="text-blue-400">
-                0 / 6
-            </span>
-        </div>
-
-        <div class="w-full h-2 bg-dark-800 rounded-full overflow-hidden">
-            <div
-                id="withdraw-referral-progress"
-                class="h-full bg-blue-500 rounded-full"
-                style="width:0%"
-            ></div>
-        </div>
-    </div>
-
-</div>
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1">
+                            <span class="text-slate-400">Referral Progress</span>
+                            <span id="withdraw-referral-progress-text" class="text-blue-400">0 / 6</span>
+                        </div>
+                        <div class="w-full h-2 bg-dark-800 rounded-full overflow-hidden">
+                            <div id="withdraw-referral-progress" class="h-full bg-blue-500 rounded-full" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Withdrawal Form -->
@@ -318,7 +285,6 @@
                 <p class="text-xs text-slate-400">Account info and statistics</p>
             </div>
 
-            <!-- Profile Info Card -->
             <div class="glass-card rounded-2xl p-5 flex flex-col items-center text-center space-y-3">
                 <img id="profile-avatar" src="https://placehold.co/100x100/1e293b/10b981?text=U" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-emerald-500/40 shadow-xl">
                 <div>
@@ -337,7 +303,6 @@
                 </div>
             </div>
 
-            <!-- Detailed Stats List -->
             <div class="glass-card rounded-2xl p-4 space-y-3">
                 <h3 class="font-bold text-sm text-slate-200">Account Overview</h3>
                 <div class="space-y-2 text-xs">
@@ -347,7 +312,7 @@
                     </div>
                     <div class="flex justify-between py-2 border-b border-slate-800">
                         <span class="text-slate-400">Total Withdrawals Made</span>
-                        <span id="profile-withdrawals" class="font-bold text-purple-400">0</span>
+                        <span id="profile-withdrawals" class="font-bold text-purple-400">₹0.00</span>
                     </div>
                     <div class="flex justify-between py-2">
                         <span class="text-slate-400">Tasks Successfully Done</span>
@@ -356,7 +321,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="space-y-2 pt-1">
                 <button onclick="refreshProfile()" class="w-full bg-dark-800 hover:bg-dark-700 border border-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs transition flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
@@ -393,67 +357,39 @@
         </div>
     </nav>
 
-<!-- NOTE: Fullscreen ad-reward overlay.
-     User cannot close it until the server-required timer is complete
-     and the ad completion has been confirmed. -->
-<div id="ad-reward-overlay"
-     class="hidden fixed inset-0 z-[9999] bg-black/95 flex flex-col">
-
-    <!-- NOTE: Countdown shown in the upper-right corner. -->
-    <div class="absolute top-5 right-5">
-        <div id="ad-countdown"
-             class="bg-slate-900/90 border border-emerald-500/40
-                    text-emerald-400 font-bold text-sm px-3 py-2 rounded-xl">
-            00:30
+    <!-- Ad Reward Overlay -->
+    <div id="ad-reward-overlay" class="hidden fixed inset-0 z-[9999] bg-black/95 flex flex-col">
+        <div class="absolute top-5 right-5">
+            <div id="ad-countdown" class="bg-slate-900/90 border border-emerald-500/40 text-emerald-400 font-bold text-sm px-3 py-2 rounded-xl">00:30</div>
         </div>
-    </div>
-
-    <!-- NOTE: Center area explains that the reward is being verified. -->
-    <div class="flex-1 flex items-center justify-center px-6 text-center">
-        <div>
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl
-                        bg-emerald-500/10 flex items-center justify-center">
-                <i class="fa-solid fa-tv text-emerald-400 text-2xl"></i>
+        <div class="flex-1 flex items-center justify-center px-6 text-center">
+            <div>
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                    <i class="fa-solid fa-tv text-emerald-400 text-2xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-lg">Watching Sponsored Ad</h3>
+                <p id="ad-reward-status" class="text-slate-400 text-xs mt-2">Please wait until the timer completes.</p>
             </div>
-
-            <h3 class="text-white font-bold text-lg">
-                Watching Sponsored Ad
-            </h3>
-
-            <p id="ad-reward-status"
-               class="text-slate-400 text-xs mt-2">
-                Please wait until the timer completes.
-            </p>
+        </div>
+        <div class="absolute bottom-5 left-5">
+            <button id="ad-close-button" disabled class="bg-slate-800 text-slate-500 font-bold text-xs px-4 py-2.5 rounded-xl opacity-60 cursor-not-allowed">Close</button>
         </div>
     </div>
-
-    <!-- NOTE: Close button remains disabled until reward verification succeeds. -->
-    <div class="absolute bottom-5 left-5">
-        <button id="ad-close-button"
-                disabled
-                class="bg-slate-800 text-slate-500 font-bold text-xs
-                       px-4 py-2.5 rounded-xl opacity-60 cursor-not-allowed">
-            Close
-        </button>
-    </div>
-</div>
     
     <script>
-        /* BOT_USERNAME placeholder: REPLACE_WITH_YOUR_BOT_USERNAME */
         const BOT_USERNAME = "Earn_4now_bot";
 
-        /* FirebaseConfig placeholder: REPLACE WITH YOUR FIREBASE CONFIG */
         const firebaseConfig = {
-  apiKey: "AIzaSyC7hlJ8Fy_Ygo23g4BvRG4zXgbmLswbzsY",
-  authDomain: "tgearnnow.firebaseapp.com",
-  databaseURL: "https://tgearnnow-default-rtdb.firebaseio.com",
-  projectId: "tgearnnow",
-  storageBucket: "tgearnnow.firebasestorage.app",
-  messagingSenderId: "368698070533",
-  appId: "1:368698070533:web:170020fe4aaf7bc3f8ee6c"
-};
+            apiKey: "AIzaSyC7hlJ8Fy_Ygo23g4BvRG4zXgbmLswbzsY",
+            authDomain: "tgearnnow.firebaseapp.com",
+            databaseURL: "https://tgearnnow-default-rtdb.firebaseio.com",
+            projectId: "tgearnnow",
+            storageBucket: "tgearnnow.firebasestorage.app",
+            messagingSenderId: "368698070533",
+            appId: "1:368698070533:web:170020fe4aaf7bc3f8ee6c"
+        };
 
-        let db, auth;
+        let db;
         let tgUser = {
             id: "guest_" + Math.floor(Math.random() * 1000000),
             first_name: "Demo User",
@@ -463,75 +399,42 @@
         let allTasksCache = [];
         let unsubscribers = [];
 
-        // Initialize App on Window Load
         window.addEventListener("load", function() {
-            // Telegram must be initialized first so the real Telegram user
-            // is available before we talk to Firebase.
             initTelegram();
             renderTelegramUser();
             hideLoading();
-
-            // Firebase is only used for app data such as coins, tasks,
-            // referrals and withdrawals. The Telegram profile should not
-            // depend on Firebase being available.
             initFirebase();
             createOrFetchUser();
         });
         
-/* ================= CURRENCY HELPER ================= */
+        const COINS_PER_RUPEE = 10;
 
-// NOTE: Central currency conversion helper.
-// New withdrawal system uses 10 coins = ₹1.
-// Existing constants/functions ko change nahi karna hai.
+        function coinsToRupees(coins) {
+            const numericCoins = Number(coins) || 0;
+            return numericCoins / COINS_PER_RUPEE;
+        }
 
-const COINS_PER_RUPEE = 10;
+        function formatRupeesFromCoins(coins) {
+            return `₹${coinsToRupees(coins).toFixed(2)}`;
+        }
 
-// NOTE: Converts coins into their equivalent rupee value.
-function coinsToRupees(coins) {
-    const numericCoins = Number(coins) || 0;
-    return numericCoins / COINS_PER_RUPEE;
-}
+        function getTelegramInitData() {
+            if (!window.Telegram || !window.Telegram.WebApp) {
+                throw new Error("Telegram WebApp is not available.");
+            }
+            const initData = window.Telegram.WebApp.initData;
+            if (!initData) {
+                throw new Error("Telegram initData is unavailable.");
+            }
+            return initData;
+        }
 
-// NOTE: Formats the rupee value consistently for the UI.
-function formatRupeesFromCoins(coins) {
-    return `₹${coinsToRupees(coins).toFixed(2)}`;
-}
-
-
-// NOTE: Returns Telegram's signed initData.
-// Backend uses this to verify that the request really comes from this Telegram user.
-function getTelegramInitData() {
-    if (!window.Telegram || !window.Telegram.WebApp) {
-        throw new Error("Telegram WebApp is not available.");
-    }
-
-    const initData = window.Telegram.WebApp.initData;
-
-    if (!initData) {
-        throw new Error("Telegram initData is unavailable.");
-    }
-
-    return initData;
-}
-
-        
-        /* ================= TELEGRAM INIT ================= */
         function initTelegram() {
             try {
-                if (!window.Telegram || !window.Telegram.WebApp) {
-                    console.warn("Telegram WebApp API is not available. Open this page from your Telegram Mini App.");
-                    return;
-                }
-
+                if (!window.Telegram || !window.Telegram.WebApp) return;
                 const tg = window.Telegram.WebApp;
-
-                // Tell Telegram that the Mini App is ready.
                 tg.ready();
-
-                // Expand the Mini App when Telegram supports it.
-                if (typeof tg.expand === "function") {
-                    tg.expand();
-                }
+                if (typeof tg.expand === "function") tg.expand();
 
                 const initData = tg.initDataUnsafe || {};
                 const user = initData.user;
@@ -541,10 +444,6 @@ function getTelegramInitData() {
                     tgUser.first_name = user.first_name || user.username || "User";
                     tgUser.photo_url = user.photo_url || "";
                     tgUser.username = user.username || "";
-
-                    console.log("Telegram user loaded:", tgUser);
-                } else {
-                    console.warn("Telegram opened the page, but no Telegram user was supplied.");
                 }
 
                 if (initData.start_param) {
@@ -552,71 +451,46 @@ function getTelegramInitData() {
                 }
 
                 setupAdBackButtonProtection();
-                
             } catch (e) {
                 console.error("Telegram initialization failed:", e);
             }
         }
 
-        /* ================= RENDER TELEGRAM USER ================= */
         function renderTelegramUser() {
             const nameEl = document.getElementById("header-name");
             const idEl = document.getElementById("header-userid");
             const avatarEl = document.getElementById("header-avatar");
 
-            // Show Telegram data immediately, before Firebase finishes.
             if (nameEl) nameEl.innerText = tgUser.first_name || "User";
             if (idEl) idEl.innerText = tgUser.id || "---";
+            if (avatarEl && tgUser.photo_url) avatarEl.src = tgUser.photo_url;
 
-            if (avatarEl && tgUser.photo_url) {
-                avatarEl.src = tgUser.photo_url;
-            }
-
-            // Also update the Profile page immediately.
             const profileName = document.getElementById("profile-name");
             const profileId = document.getElementById("profile-userid");
             const profileAvatar = document.getElementById("profile-avatar");
 
             if (profileName) profileName.innerText = tgUser.first_name || "User";
             if (profileId) profileId.innerText = tgUser.id || "---";
-            if (profileAvatar && tgUser.photo_url) {
-                profileAvatar.src = tgUser.photo_url;
-            }
+            if (profileAvatar && tgUser.photo_url) profileAvatar.src = tgUser.photo_url;
         }
 
-        /* ================= FIREBASE INIT ================= */
         function initFirebase() {
             try {
-                if (!window.firebase) {
-                    throw new Error("Firebase SDK did not load.");
-                }
-
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-
+                if (!window.firebase) throw new Error("Firebase SDK did not load.");
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
-                console.log("Firebase initialized successfully.");
             } catch (e) {
                 db = null;
-                console.error("Firebase initialization failed:", e);
                 showToast("Firebase is unavailable. Telegram profile is still loaded.", "error");
             }
         }
 
-        /* ================= CREATE OR FETCH USER ================= */
         function createOrFetchUser() {
-            // Never block the Telegram profile if Firebase is unavailable.
-            if (!db) {
-                console.warn("Skipping Firebase user sync because Firestore is unavailable.");
-                return;
-            }
-
+            if (!db) return;
             const userRef = db.collection("users").doc(String(tgUser.id));
 
             userRef.get().then((docSnapshot) => {
                 if (!docSnapshot.exists) {
-                    // New user creation
                     const referralByVal = (startParam && startParam !== String(tgUser.id)) ? startParam : null;
                     const newUser = {
                         id: String(tgUser.id),
@@ -629,247 +503,118 @@ function getTelegramInitData() {
                         totalWithdrawals: 0,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
-
                     userRef.set(newUser).then(() => {
-                        
                         setupRealtimeListeners();
                     }).catch(err => {
-                        console.error("Error creating user:", err);
                         showToast("Could not save your profile data.", "error");
                     });
                 } else {
                     setupRealtimeListeners();
                 }
             }).catch(err => {
-                // IMPORTANT: do not hide/replace the Telegram profile when
-                // Firestore permissions, network or indexing cause an error.
-                console.error("Error fetching user:", err);
-                showToast("Firebase sync failed. Telegram profile is still available.", "error");
+                showToast("Firebase sync failed.", "error");
             });
         }
 
-        /* ================= REALTIME LISTENERS & RENDERERS ================= */
         function setupRealtimeListeners() {
             const userId = tgUser.id;
 
-            // 1. User Profile Realtime Listener
             const userUnsub = db.collection("users").doc(userId).onSnapshot((doc) => {
                 if (doc.exists) {
                     const data = doc.data();
                     renderDashboard(data);
                     renderProfile(data);
+                    updateWithdrawProgress(data);
                 }
-            }, (error) => {
-                console.error("User listener error:", error);
             });
             unsubscribers.push(userUnsub);
 
-            // 2. Announcements Realtime Listener (Latest doc)
             const annUnsub = db.collection("announcements").orderBy("createdAt", "desc").limit(1).onSnapshot((snapshot) => {
                 if (!snapshot.empty) {
-                    const annData = snapshot.docs[0].data();
-                    renderAnnouncement(annData);
+                    renderAnnouncement(snapshot.docs[0].data());
                 } else {
                     document.getElementById("announcement-banner").classList.add("hidden");
                 }
-            }, (error) => {
-                console.error("Announcement listener error:", error);
             });
             unsubscribers.push(annUnsub);
 
-            // 3. Tasks Realtime Listener
             const tasksUnsub = db.collection("tasks").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
                 allTasksCache = [];
                 snapshot.forEach((doc) => {
                     allTasksCache.push({ id: doc.id, ...doc.data() });
                 });
                 renderAllTasks();
-            }, (error) => {
-                console.error("Tasks listener error:", error);
             });
             unsubscribers.push(tasksUnsub);
 
-            // 4. Withdrawals History Realtime Listener
-           // 4. Withdrawals History Realtime Listener
-const wdUnsubNew = db.collection("withdrawals")
-    .where("user_id", "==", userId)
-    .onSnapshot((snapshot) => {
-
-        loadWithdrawalHistory();
-
-    }, (error) => {
-
-        console.error(
-            "New withdrawal history listener error:",
-            error
-        );
-
-        loadWithdrawalHistory();
-
-    });
-
-
-const wdUnsubOld = db.collection("withdrawals")
-    .where("userId", "==", userId)
-    .onSnapshot((snapshot) => {
-
-        loadWithdrawalHistory();
-
-    }, (error) => {
-
-        console.error(
-            "Old withdrawal history listener error:",
-            error
-        );
-
-        loadWithdrawalHistory();
-
-    });
-
-
-async function loadWithdrawalHistory() {
-
-    try {
-
-        const [newSnapshot, oldSnapshot] =
-            await Promise.all([
-                db.collection("withdrawals")
-                    .where("user_id", "==", userId)
-                    .get(),
-
-                db.collection("withdrawals")
-                    .where("userId", "==", userId)
-                    .get()
-            ]);
-
-
-        const withdrawalsMap = new Map();
-
-
-        // New canonical records
-        newSnapshot.forEach((doc) => {
-
-            withdrawalsMap.set(
-                doc.id,
-                {
-                    id: doc.id,
-                    ...doc.data()
-                }
-            );
-
-        });
-
-
-        // Old records
-        oldSnapshot.forEach((doc) => {
-
-            if (!withdrawalsMap.has(doc.id)) {
-
-                withdrawalsMap.set(
-                    doc.id,
-                    {
-                        id: doc.id,
-                        ...doc.data()
-                    }
-                );
-
-            }
-
-        });
-
-
-        const withdrawalsList =
-            Array.from(withdrawalsMap.values());
-
-
-        // Support both old and new timestamp fields
-        withdrawalsList.sort((a, b) => {
-
-            const getTime = (wd) => {
-
-                const timestamp =
-                    wd.created_at ??
-                    wd.createdAt;
-
-                if (timestamp?.toMillis) {
-                    return timestamp.toMillis();
-                }
-
-                if (timestamp instanceof Date) {
-                    return timestamp.getTime();
-                }
-
-                if (typeof timestamp === "number") {
-                    return timestamp;
-                }
-
-                return 0;
-            };
-
-
-            return getTime(b) - getTime(a);
-
-        });
-
-
-        renderWithdrawalsHistory(
-            withdrawalsList.slice(0, 3)
-        );
-
-
-        // Only APPROVED withdrawals count
-        // toward Total Cashed Out.
-        renderApprovedWithdrawalTotal(
-            withdrawalsList
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Withdrawal history load error:",
-            error
-        );
-
-        renderWithdrawalsHistory([]);
-        renderApprovedWithdrawalTotal([]);
-
-    }
-
-}
-
-
-unsubscribers.push(wdUnsubNew);
-unsubscribers.push(wdUnsubOld);
+            loadWithdrawalHistory(userId);
         }
 
-        /* ================= RENDER DASHBOARD ================= */
+        async function loadWithdrawalHistory(userId) {
+            try {
+                const [newSnapshot, oldSnapshot] = await Promise.all([
+                    db.collection("withdrawals").where("user_id", "==", userId).get(),
+                    db.collection("withdrawals").where("userId", "==", userId).get()
+                ]);
+
+                const withdrawalsMap = new Map();
+                newSnapshot.forEach((doc) => withdrawalsMap.set(doc.id, { id: doc.id, ...doc.data() }));
+                oldSnapshot.forEach((doc) => {
+                    if (!withdrawalsMap.has(doc.id)) withdrawalsMap.set(doc.id, { id: doc.id, ...doc.data() });
+                });
+
+                const withdrawalsList = Array.from(withdrawalsMap.values());
+                withdrawalsList.sort((a, b) => {
+                    const getTime = (wd) => {
+                        const timestamp = wd.created_at ?? wd.createdAt;
+                        if (timestamp?.toMillis) return timestamp.toMillis();
+                        if (timestamp instanceof Date) return timestamp.getTime();
+                        if (typeof timestamp === "number") return timestamp;
+                        return 0;
+                    };
+                    return getTime(b) - getTime(a);
+                });
+
+                renderWithdrawalsHistory(withdrawalsList.slice(0, 3));
+                renderApprovedWithdrawalTotal(withdrawalsList);
+            } catch (error) {
+                renderWithdrawalsHistory([]);
+                renderApprovedWithdrawalTotal([]);
+            }
+        }
+
+        function updateWithdrawProgress(user) {
+            const currentCoins = Number(user.coins) || 0;
+            const currentReferrals = Number(user.reffer) || 0;
+            
+            const minCoins = 3000; // ₹300 * 10
+            const minRefs = 6;
+
+            const coinPercent = Math.min(100, (currentCoins / minCoins) * 100);
+            const refPercent = Math.min(100, (currentReferrals / minRefs) * 100);
+
+            document.getElementById("withdraw-balance-progress").style.width = `${coinPercent}%`;
+            document.getElementById("withdraw-balance-progress-text").innerText = `${formatRupeesFromCoins(currentCoins)} / ₹300`;
+
+            document.getElementById("withdraw-referral-progress").style.width = `${refPercent}%`;
+            document.getElementById("withdraw-referral-progress-text").innerText = `${currentReferrals} / ${minRefs}`;
+        }
+
         function renderDashboard(user) {
             document.getElementById("header-name").innerText = user.name || "User";
             document.getElementById("header-userid").innerText = user.id;
-            if (user.photoURL) {
-                document.getElementById("header-avatar").src = user.photoURL;
-            }
+            if (user.photoURL) document.getElementById("header-avatar").src = user.photoURL;
 
-           // NOTE: Show the live coin balance together with its rupee equivalent.
-// Conversion uses the Step 7 helper: 10 coins = ₹1.
-const currentCoins = Number(user.coins) || 0;
-document.getElementById("stat-coins").innerText =
-    `${currentCoins} coins (${formatRupeesFromCoins(currentCoins)})`;
+            const currentCoins = Number(user.coins) || 0;
+            document.getElementById("stat-coins").innerText = `${currentCoins} (${formatRupeesFromCoins(currentCoins)})`;
             document.getElementById("stat-referrals").innerText = user.reffer || 0;
-            document.getElementById("stat-withdrawals").innerText = "₹0.00";
             document.getElementById("stat-tasks").innerText = user.tasksCompleted || 0;
+            document.getElementById("withdrawal-balance").innerText = formatRupeesFromCoins(user.coins);
 
-            // Update Withdrawal balance display
-           document.getElementById("withdrawal-balance").innerText =
-    formatRupeesFromCoins(user.coins);
-
-            // Referral Link
             const refLink = `https://t.me/${BOT_USERNAME}?start=${user.id}`;
             document.getElementById("referral-link-input").value = refLink;
         }
 
-        /* ================= RENDER ANNOUNCEMENT ================= */
         function renderAnnouncement(ann) {
             const banner = document.getElementById("announcement-banner");
             document.getElementById("announcement-title").innerText = ann.title || "Announcement";
@@ -877,7 +622,6 @@ document.getElementById("stat-coins").innerText =
             banner.classList.remove("hidden");
         }
 
-        /* ================= RENDER ALL TASKS ================= */
         function renderAllTasks(filteredList = null) {
             const container = document.getElementById("all-tasks-container");
             const listToRender = filteredList || allTasksCache;
@@ -911,7 +655,6 @@ document.getElementById("stat-coins").innerText =
             container.innerHTML = html;
         }
 
-        /* ================= FILTER TASKS (SEARCH) ================= */
         function filterTasks() {
             const query = document.getElementById("task-search").value.toLowerCase();
             const filtered = allTasksCache.filter(t => 
@@ -921,7 +664,6 @@ document.getElementById("stat-coins").innerText =
             renderAllTasks(filtered);
         }
 
-        /* ================= CLAIM TASK (TRANSACTION + PREVENTION) ================= */
         function claimTask(taskId, rewardAmount) {
             if (!db) return;
             const userId = tgUser.id;
@@ -931,17 +673,12 @@ document.getElementById("stat-coins").innerText =
 
             db.runTransaction((transaction) => {
                 return transaction.get(claimRef).then((claimDoc) => {
-                    if (claimDoc.exists) {
-                        throw new Error("ALREADY_CLAIMED");
-                    }
-                    // Create claim record
+                    if (claimDoc.exists) throw new Error("ALREADY_CLAIMED");
                     transaction.set(claimRef, {
                         userId: userId,
                         taskId: taskId,
                         claimedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-
-                    // Update user coins and tasksCompleted
                     transaction.update(userRef, {
                         coins: firebase.firestore.FieldValue.increment(rewardAmount),
                         tasksCompleted: firebase.firestore.FieldValue.increment(1)
@@ -953,818 +690,308 @@ document.getElementById("stat-coins").innerText =
                 if (err.message === "ALREADY_CLAIMED") {
                     showToast("You have already claimed this task!", "error");
                 } else {
-                    console.error("Claim transaction error:", err);
                     showToast("Failed to claim task. Try again.", "error");
                 }
             });
         }
 
-/* ================= SECURE ADSGRAM REWARD SYSTEM ================= */
+        let activeAdSessionId = null;
+        let adTimerInterval = null;
+        let adTimerFinished = false;
+        let adProviderCompleted = false;
+        let adCompletionInProgress = false;
+        let adAppHidden = false;
+        let adSessionStartedAt = null;
 
-// NOTE: Stores the currently active ad session and its completion state.
-// Coins are NOT credited from the frontend.
-let activeAdSessionId = null;
-let adTimerInterval = null;
-let adTimerFinished = false;
-let adProviderCompleted = false;
-let adCompletionInProgress = false;
-let adAppHidden = false;
-let adSessionStartedAt = null;
+        document.addEventListener("visibilitychange", () => {
+            if (!activeAdSessionId) return;
+            if (document.hidden) {
+                adAppHidden = true;
+            } else if (adAppHidden) {
+                adAppHidden = false;
+            }
+        });
 
-        /* ================= AD BACKGROUND DETECTION ================= */
-
-document.addEventListener("visibilitychange", () => {
-
-    if (!activeAdSessionId) {
-        return;
-    }
-
-    if (document.hidden) {
-
-        adAppHidden = true;
-
-        console.log("Ad app moved to background.");
-
-        return;
-    }
-
-    if (!document.hidden && adAppHidden) {
-
-        adAppHidden = false;
-
-        console.log("Ad app returned to foreground.");
-
-        if (adSessionStartedAt) {
-
-            const elapsedSeconds =
-                Math.floor(
-                    (Date.now() - adSessionStartedAt) / 1000
-                );
-
-            console.log(
-                "Ad session elapsed time:",
-                elapsedSeconds,
-                "seconds"
-            );
-        }
-    }
-});
-
-        /* ================= TELEGRAM BACK BUTTON PROTECTION ================= */
-
-function setupAdBackButtonProtection() {
-
-    if (
-        !window.Telegram ||
-        !Telegram.WebApp ||
-        !Telegram.WebApp.BackButton
-    ) {
-        return;
-    }
-
-    Telegram.WebApp.BackButton.onClick(() => {
-
-        // If an ad session is active, do not allow
-        // the Telegram Back button to bypass the ad flow.
-        if (activeAdSessionId) {
-
-            showToast(
-                "Please finish the current ad first.",
-                "error"
-            );
-
-            return;
+        function setupAdBackButtonProtection() {
+            if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.BackButton) return;
+            Telegram.WebApp.BackButton.onClick(() => {
+                if (activeAdSessionId) {
+                    showToast("Please finish the current ad first.", "error");
+                    return;
+                }
+                Telegram.WebApp.BackButton.hide();
+            });
         }
 
-        // No active ad session:
-        // normal Telegram back behavior.
-        Telegram.WebApp.BackButton.hide();
-
-    });
-}
-
-// NOTE: Formats seconds as MM:SS for the fullscreen ad countdown.
-function formatAdCountdown(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-
-    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
-}
-
-
-// NOTE: Resets the ad overlay state before a new sponsored ad starts.
-function resetAdOverlay() {
-    activeAdSessionId = null;
-    adTimerFinished = false;
-    adProviderCompleted = false;
-    adCompletionInProgress = false;
-    adAppHidden = false;
-adSessionStartedAt = null;
-
-    if (adTimerInterval) {
-        clearInterval(adTimerInterval);
-        adTimerInterval = null;
-    }
-
-    const overlay = document.getElementById("ad-reward-overlay");
-    const closeButton = document.getElementById("ad-close-button");
-    const countdown = document.getElementById("ad-countdown");
-    const status = document.getElementById("ad-reward-status");
-
-    overlay.classList.add("hidden");
-
-    countdown.innerText = "00:30";
-
-    closeButton.disabled = true;
-    closeButton.classList.add(
-        "opacity-60",
-        "cursor-not-allowed",
-        "text-slate-500"
-    );
-    closeButton.classList.remove("text-white");
-
-    status.innerText = "Please wait until the timer completes.";
-
-if (
-    window.Telegram &&
-    Telegram.WebApp &&
-    Telegram.WebApp.BackButton
-) {
-    Telegram.WebApp.BackButton.hide();
-}
-    
-}
-
-
-// NOTE: Starts the visible 30-second countdown.
-// This timer is only the UI timer; the backend performs the real security check.
-function startAdCountdown() {
-    let remainingSeconds = 30;
-
-    const countdown = document.getElementById("ad-countdown");
-
-    countdown.innerText = formatAdCountdown(remainingSeconds);
-
-    adTimerInterval = setInterval(() => {
-        remainingSeconds--;
-
-        countdown.innerText = formatAdCountdown(
-            Math.max(remainingSeconds, 0)
-        );
-
-        if (remainingSeconds <= 0) {
-            clearInterval(adTimerInterval);
-            adTimerInterval = null;
-
-            adTimerFinished = true;
-
-            document.getElementById("ad-reward-status").innerText =
-                "Checking ad completion...";
-
-            attemptAdCompletion();
+        function formatAdCountdown(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
         }
-    }, 1000);
-}
 
+        function resetAdOverlay() {
+            activeAdSessionId = null;
+            adTimerFinished = false;
+            adProviderCompleted = false;
+            adCompletionInProgress = false;
+            adAppHidden = false;
+            adSessionStartedAt = null;
 
-// NOTE: Calls the backend only after BOTH conditions are satisfied:
-// 1. 30-second timer completed.
-// 2. Adsgram reported successful ad completion.
-async function attemptAdCompletion() {
+            if (adTimerInterval) {
+                clearInterval(adTimerInterval);
+                adTimerInterval = null;
+            }
 
-    if (
-        !activeAdSessionId ||
-        !adTimerFinished ||
-        !adProviderCompleted ||
-        adCompletionInProgress
-    ) {
-        return;
-    }
+            const overlay = document.getElementById("ad-reward-overlay");
+            const closeButton = document.getElementById("ad-close-button");
+            const countdown = document.getElementById("ad-countdown");
+            const status = document.getElementById("ad-reward-status");
 
-    adCompletionInProgress = true;
+            overlay.classList.add("hidden");
+            countdown.innerText = "00:30";
 
-    const sessionId = activeAdSessionId;
+            closeButton.disabled = true;
+            closeButton.classList.add("opacity-60", "cursor-not-allowed", "text-slate-500");
+            closeButton.classList.remove("text-white");
+            status.innerText = "Please wait until the timer completes.";
 
-    try {
+            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.BackButton) {
+                Telegram.WebApp.BackButton.hide();
+            }
+        }
 
-        const initData = getTelegramInitData();
+        function startAdCountdown() {
+            let remainingSeconds = 30;
+            const countdown = document.getElementById("ad-countdown");
+            countdown.innerText = formatAdCountdown(remainingSeconds);
 
-        let lastError = null;
+            adTimerInterval = setInterval(() => {
+                remainingSeconds--;
+                countdown.innerText = formatAdCountdown(Math.max(remainingSeconds, 0));
 
-        // Retry the SAME session up to 3 times.
-        for (let attempt = 1; attempt <= 3; attempt++) {
+                if (remainingSeconds <= 0) {
+                    clearInterval(adTimerInterval);
+                    adTimerInterval = null;
+                    adTimerFinished = true;
+                    document.getElementById("ad-reward-status").innerText = "Checking ad completion...";
+                    attemptAdCompletion();
+                }
+            }, 1000);
+        }
+
+        async function attemptAdCompletion() {
+            if (!activeAdSessionId || !adTimerFinished || !adProviderCompleted || adCompletionInProgress) return;
+            adCompletionInProgress = true;
+            const sessionId = activeAdSessionId;
 
             try {
+                const initData = getTelegramInitData();
+                let lastError = null;
 
-                const response = await fetch(
-                    "/api/ad/complete",
-                    {
-                        method: "POST",
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        const response = await fetch("/api/ad/complete", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ initData: initData, session_id: sessionId })
+                        });
 
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
+                        const result = await response.json();
+                        if (response.ok && result.ok) {
+                            document.getElementById("ad-reward-status").innerText = "Ad completed! +50 Coins added.";
+                            const closeButton = document.getElementById("ad-close-button");
+                            closeButton.disabled = false;
+                            closeButton.classList.remove("opacity-60", "cursor-not-allowed", "text-slate-500");
+                            closeButton.classList.add("text-white");
 
-                        body: JSON.stringify({
-                            initData: initData,
-                            session_id: sessionId
-                        })
+                            showToast("🎉 Ad watched successfully! +50 coins added.", "success");
+                            activeAdSessionId = null;
+                            return;
+                        }
+                        throw new Error(result.error || result.message || "Ad reward verification failed.");
+                    } catch (error) {
+                        lastError = error;
+                        if (attempt < 3) {
+                            document.getElementById("ad-reward-status").innerText = `Verifying reward... (${attempt}/3)`;
+                            await new Promise(resolve => setTimeout(resolve, 1500));
+                        }
                     }
-                );
+                }
+                document.getElementById("ad-reward-status").innerText = "Reward verification failed. Please try again.";
+                showToast("Network issue. Please try again.", "error");
+            } catch (error) {
+                document.getElementById("ad-reward-status").innerText = "Reward verification failed.";
+                showToast("Ad reward could not be verified.", "error");
+            } finally {
+                adCompletionInProgress = false;
+            }
+        }
+
+        async function watchAdsgramAd() {
+            if (activeAdSessionId) return;
+            resetAdOverlay();
+
+            try {
+                const initData = getTelegramInitData();
+                const response = await fetch("/api/ad/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ initData: initData })
+                });
 
                 const result = await response.json();
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.error || "Unable to start ad session.");
+                }
 
-                // Backend returns { ok: true }
-                if (response.ok && result.ok) {
+                activeAdSessionId = result.session_id;
+                adSessionStartedAt = Date.now();
+                adAppHidden = false;
 
-                    document.getElementById(
-                        "ad-reward-status"
-                    ).innerText =
-                        "Ad completed! +50 Coins added.";
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.BackButton) {
+                    Telegram.WebApp.BackButton.show();
+                }
 
-                    const closeButton =
-                        document.getElementById(
-                            "ad-close-button"
-                        );
+                const overlay = document.getElementById("ad-reward-overlay");
+                overlay.classList.remove("hidden");
+                startAdCountdown();
 
-                    closeButton.disabled = false;
+                if (typeof show_11933837 !== "function") {
+                    throw new Error("Monetag SDK is not available.");
+                }
 
-                    closeButton.classList.remove(
-                        "opacity-60",
-                        "cursor-not-allowed",
-                        "text-slate-500"
-                    );
+                show_11933837().then(() => {
+                    adProviderCompleted = true;
+                    document.getElementById("ad-reward-status").innerText = "Ad completed. Waiting for timer...";
+                    attemptAdCompletion();
+                }).catch((error) => {
+                    console.error("Monetag ad error:", error);
+                });
+            } catch (error) {
+                if (adTimerInterval) {
+                    clearInterval(adTimerInterval);
+                    adTimerInterval = null;
+                }
+                activeAdSessionId = null;
+                adTimerFinished = false;
+                adProviderCompleted = false;
 
-                    closeButton.classList.add(
-                        "text-white"
-                    );
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.BackButton) {
+                    Telegram.WebApp.BackButton.hide();
+                }
+                document.getElementById("ad-reward-overlay").classList.add("hidden");
+                showToast("Ad was skipped or failed. No coins were added.", "error");
+            }
+        }
 
-                    showToast(
-                        "🎉 Ad watched successfully! +50 coins added.",
-                        "success"
-                    );
+        document.getElementById("ad-close-button").addEventListener("click", () => {
+            if (adCompletionInProgress) return;
+            const button = document.getElementById("ad-close-button");
+            if (button.disabled) return;
+            resetAdOverlay();
+        });
 
-                    // Clear ONLY after successful verification.
-                    activeAdSessionId = null;
+        async function submitWithdrawal() {
+            const upiInput = document.getElementById("upi-input");
+            const amountInput = document.getElementById("withdrawal-amount");
+            const upi = upiInput.value.trim();
+            const amountStr = amountInput.value.trim();
+            const amount = parseInt(amountStr, 10);
 
+            if (!upi) {
+                showToast("Please enter a valid UPI ID.", "error");
+                return;
+            }
+
+            if (!amount || amount < 3000) {
+                showToast("Minimum withdrawal is 3000 Coins (₹300).", "error");
+                return;
+            }
+
+            let initData;
+            try {
+                initData = getTelegramInitData();
+            } catch (error) {
+                showToast("Telegram verification failed.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/withdraw/request", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ initData: initData, coins: amount, upi: upi })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.ok) {
+                    showToast(result.error || result.message || "Withdrawal request failed.", "error");
                     return;
                 }
 
-                throw new Error(
-                    result.error ||
-                    result.message ||
-                    "Ad reward verification failed."
-                );
-
+                showToast("Withdrawal request submitted successfully!", "success");
+                upiInput.value = "";
+                amountInput.value = "";
             } catch (error) {
-
-                lastError = error;
-
-                console.error(
-                    `Ad completion attempt ${attempt} failed:`,
-                    error
-                );
-
-                if (attempt < 3) {
-
-                    document.getElementById(
-                        "ad-reward-status"
-                    ).innerText =
-                        `Verifying reward... (${attempt}/3)`;
-
-                    await new Promise(resolve =>
-                        setTimeout(resolve, 1500)
-                    );
-                }
+                showToast("Network error. Please try again.", "error");
             }
         }
 
-        // IMPORTANT:
-        // Do NOT clear activeAdSessionId here.
-        document.getElementById(
-            "ad-reward-status"
-        ).innerText =
-            "Reward verification failed. Please try again.";
-
-        showToast(
-            "Network issue. Your ad session is still active. Please try again.",
-            "error"
-        );
-
-        console.error(
-            "Ad completion failed after retries:",
-            lastError
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Ad completion setup error:",
-            error
-        );
-
-        document.getElementById(
-            "ad-reward-status"
-        ).innerText =
-            "Reward verification failed.";
-
-        showToast(
-            "Ad reward could not be verified. Please try again.",
-            "error"
-        );
-
-    } finally {
-
-        adCompletionInProgress = false;
-
-    }
-}
-
-// NOTE: Starts a secure backend ad session before showing Adsgram.
-// The backend creates the session and records the official start time.
-async function watchAdsgramAd() {
-    if (activeAdSessionId) {
-        return;
-    }
-
-    resetAdOverlay();
-
-    try {
-        const initData = getTelegramInitData();
-
-        const response = await fetch("/api/ad/start", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                initData: initData
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || !result.ok) {
-            throw new Error(
-                result.error || "Unable to start ad session."
-            );
-        }
-
-        // NOTE: Save the server-created session ID.
-        activeAdSessionId = result.session_id;
-        adSessionStartedAt = Date.now();
-        adAppHidden = false;
-        if (
-    window.Telegram &&
-    Telegram.WebApp &&
-    Telegram.WebApp.BackButton
-) {
-    Telegram.WebApp.BackButton.show();
-}
-
-        const overlay = document.getElementById("ad-reward-overlay");
-
-        overlay.classList.remove("hidden");
-
-        // NOTE: Start the visible timer immediately after the backend
-        // confirms that the ad session has been created.
-        startAdCountdown();
-
-        // NOTE: Monetag completion is required in addition to the timer.
-        if (typeof show_11933837 !== "function") {
-            throw new Error("Monetag SDK is not available.");
-        }
-
-        // Show Monetag rewarded interstitial.
-        console.log("Monetag function:", typeof show_11933837);
-        show_11933837().then(() => {
-            adProviderCompleted = true;
-
-            document.getElementById("ad-reward-status").innerText =
-                "Ad completed. Waiting for timer...";
-
-            attemptAdCompletion();
-        }).catch((error) => {
-            console.error("Monetag ad error:", error);
-        });
-
-    } catch (error) {
-        console.error("Ad failed or was closed:", error);
-
-        // NOTE: If the user skips/closes the ad before successful completion,
-        // the reward is never sent to the backend.
-        if (adTimerInterval) {
-            clearInterval(adTimerInterval);
-            adTimerInterval = null;
-        }
-
-        activeAdSessionId = null;
-        adTimerFinished = false;
-        adProviderCompleted = false;
-
-        if (
-    window.Telegram &&
-    Telegram.WebApp &&
-    Telegram.WebApp.BackButton
-) {
-    Telegram.WebApp.BackButton.hide();
-}
-
-        document.getElementById("ad-reward-overlay")
-            .classList.add("hidden");
-
-        showToast(
-            "Ad was skipped or failed. No coins were added.",
-            "error"
-        );
-    }
-}
-
-
-// NOTE: Allows closing the overlay ONLY after backend reward verification
-// has succeeded. Before that, the button remains disabled.
-document.getElementById("ad-close-button").addEventListener(
-    "click",
-    () => {
-        if (adCompletionInProgress) {
-            return;
-        }
-
-        const button = document.getElementById("ad-close-button");
-
-        if (button.disabled) {
-            return;
-        }
-
-        resetAdOverlay();
-    }
-);
-
-        /* ================= SECURE WITHDRAWAL SUBMISSION ================= */
-
-async function submitWithdrawal() {
-
-    const upiInput =
-        document.getElementById("upi-input");
-
-    const amountInput =
-        document.getElementById("withdrawal-amount");
-
-    const upi =
-        upiInput.value.trim();
-
-    const amountStr =
-        amountInput.value.trim();
-
-    const amount =
-        parseInt(amountStr, 10);
-
-
-    // ================= BASIC FRONTEND VALIDATION =================
-
-    if (!upi) {
-        showToast(
-            "Please enter a valid UPI ID.",
-            "error"
-        );
-        return;
-    }
-
-    if (!amount || amount < 3000) {
-        showToast(
-            "Minimum withdrawal is 3000 Coins (₹300).",
-            "error"
-        );
-        return;
-    }
-
-
-    // ================= TELEGRAM AUTH =================
-
-    let initData;
-
-    try {
-
-        initData =
-            getTelegramInitData();
-
-    } catch (error) {
-
-        console.error(
-            "Telegram auth error:",
-            error
-        );
-
-        showToast(
-            "Telegram verification failed. Please reopen the Mini App.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    // ================= SEND REQUEST TO BACKEND =================
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/withdraw/request",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        initData: initData,
-                        coins: amount,
-                        upi: upi
-                    })
-                }
-            );
-
-
-        const result =
-            await response.json();
-
-
-        // ================= BACKEND ERROR =================
-
-        if (!response.ok || !result.ok) {
-
-            const errorCode =
-                result.error || "";
-
-            if (
-                errorCode ===
-                "INSUFFICIENT_BALANCE"
-            ) {
-
-                showToast(
-                    "Insufficient coin balance.",
-                    "error"
-                );
-
-            } else if (
-                errorCode ===
-                "MINIMUM_WITHDRAWAL_NOT_MET"
-            ) {
-
-                showToast(
-                    "Minimum withdrawal is 3000 Coins (₹300).",
-                    "error"
-                );
-
-            } else if (
-                errorCode ===
-                "MINIMUM_REFERRALS_NOT_MET"
-            ) {
-
-                showToast(
-                    "You need at least 6 referrals.",
-                    "error"
-                );
-
-            } else if (
-                errorCode ===
-                "INVALID_UPI"
-            ) {
-
-                showToast(
-                    "Please enter a valid UPI ID.",
-                    "error"
-                );
-
-            } else {
-
-                showToast(
-                    result.message ||
-                    "Withdrawal request failed. Please try again.",
-                    "error"
-                );
+        function renderWithdrawalsHistory(list) {
+            const container = document.getElementById("withdrawals-history-container");
+            if (!list || list.length === 0) {
+                container.innerHTML = `<div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">No withdrawal history found.</div>`;
+                return;
             }
 
-            return;
+            let html = "";
+            list.forEach(wd => {
+                const coins = Number(wd.coins ?? wd.amount ?? 0);
+                const amountRs = wd.amount_rs != null ? Number(wd.amount_rs) : coinsToRupees(coins);
+                let status = String(wd.status || "PENDING").toUpperCase();
+                let statusColor = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+                if (status === "APPROVED") statusColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                if (status === "REJECTED") statusColor = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+
+                html += `
+                    <div class="glass-card p-3 rounded-xl flex items-center justify-between text-xs">
+                        <div>
+                            <p class="font-bold text-white">${formatRupeesFromCoins(coins)} <span class="text-[10px] text-slate-400 font-normal">(${coins} coins)</span></p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">UPI: ${escapeHtml(wd.upi || "N/A")}</p>
+                            <p class="text-[10px] text-slate-500">ID: ${escapeHtml(wd.id.substring(0, 8))}...</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColor}">${status}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
+        function renderApprovedWithdrawalTotal(list) {
+            let approvedCoins = 0;
+            if (!Array.isArray(list)) list = [];
 
-        // ================= SUCCESS =================
+            list.forEach((wd) => {
+                if (String(wd.status || "").toUpperCase() !== "APPROVED") return;
+                const coins = Number(wd.coins ?? wd.amount ?? 0);
+                if (Number.isFinite(coins) && coins > 0) approvedCoins += coins;
+            });
 
-        showToast(
-            "Withdrawal request submitted successfully!",
-            "success"
-        );
+            const formattedTotal = formatRupeesFromCoins(approvedCoins);
+            const dashboardEl = document.getElementById("stat-withdrawals");
+            if (dashboardEl) dashboardEl.innerText = formattedTotal;
 
-
-        // Clear form only after backend success.
-        upiInput.value = "";
-        amountInput.value = "";
-
-
-        console.log(
-            "Withdrawal request created:",
-            result
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Withdrawal request error:",
-            error
-        );
-
-        showToast(
-            "Network error. Please try again.",
-            "error"
-        );
-    }
-}
-       
-       /* ================= RENDER WITHDRAWALS HISTORY ================= */
-
-function renderWithdrawalsHistory(list) {
-
-    const container =
-        document.getElementById(
-            "withdrawals-history-container"
-        );
-
-    if (!list || list.length === 0) {
-
-        container.innerHTML = `
-            <div class="glass-card p-3 rounded-xl text-center text-slate-400 text-xs">
-                No withdrawal history found.
-            </div>
-        `;
-
-        return;
-    }
-
-    let html = "";
-
-    list.forEach(wd => {
-
-        // New canonical fields
-        // Old fields are supported for compatibility.
-        const coins = Number(
-            wd.coins ??
-            wd.amount ??
-            0
-        );
-
-        const amountRs =
-            wd.amount_rs != null
-                ? Number(wd.amount_rs)
-                : coinsToRupees(coins);
-
-        let status =
-            String(
-                wd.status || "PENDING"
-            ).toUpperCase();
-
-        let statusColor =
-            "text-amber-400 bg-amber-500/10 border-amber-500/20";
-
-        if (status === "APPROVED") {
-            statusColor =
-                "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+            const profileEl = document.getElementById("profile-withdrawals");
+            if (profileEl) profileEl.innerText = formattedTotal;
         }
 
-        if (status === "REJECTED") {
-            statusColor =
-                "text-rose-400 bg-rose-500/10 border-rose-500/20";
-        }
-
-        const upi =
-            escapeHtml(
-                wd.upi || "N/A"
-            );
-
-        html += `
-            <div class="glass-card p-3 rounded-xl flex items-center justify-between text-xs">
-
-                <div>
-                    <p class="font-bold text-white">
-                        ${formatRupeesFromCoins(coins)}
-                        <span class="text-[10px] text-slate-400 font-normal">
-                            (${coins} coins)
-                        </span>
-                    </p>
-
-                    <p class="text-[10px] text-slate-400 mt-0.5">
-                        UPI: ${upi}
-                    </p>
-
-                    <p class="text-[10px] text-slate-500">
-                        ₹${amountRs.toFixed(2)}
-                    </p>
-
-                    <p class="text-[10px] text-slate-500">
-                        ID: ${escapeHtml(wd.id.substring(0, 8))}...
-                    </p>
-                </div>
-
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColor}">
-                    ${status}
-                </span>
-
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-}
-
-/* ================= APPROVED WITHDRAWAL TOTAL ================= */
-
-/* ================= APPROVED WITHDRAWAL TOTAL ================= */
-
-function renderApprovedWithdrawalTotal(list) {
-
-    let approvedCoins = 0;
-
-    if (!Array.isArray(list)) {
-        list = [];
-    }
-
-    list.forEach((wd) => {
-
-        const status =
-            String(wd.status || "")
-                .toUpperCase();
-
-        // Only APPROVED withdrawals count
-        if (status !== "APPROVED") {
-            return;
-        }
-
-        // New field: coins
-        // Old field: amount
-        const coins = Number(
-            wd.coins ??
-            wd.amount ??
-            0
-        );
-
-        if (
-            Number.isFinite(coins) &&
-            coins > 0
-        ) {
-            approvedCoins += coins;
-        }
-    });
-
-
-    const formattedTotal =
-        formatRupeesFromCoins(approvedCoins);
-
-
-    // Dashboard → Total Cashed Out
-    const dashboardEl =
-        document.getElementById(
-            "stat-withdrawals"
-        );
-
-    if (dashboardEl) {
-
-        dashboardEl.innerText =
-            formattedTotal;
-
-    }
-
-
-    // Profile → Total Cashed Out
-    const profileEl =
-        document.getElementById(
-            "profile-withdrawals"
-        );
-
-    if (profileEl) {
-
-        profileEl.innerText =
-            formattedTotal;
-
-    }
-
-}
-        
-
-        /* ================= RENDER PROFILE ================= */
         function renderProfile(user) {
             document.getElementById("profile-name").innerText = user.name || "User";
             document.getElementById("profile-userid").innerText = user.id;
-            if (user.photoURL) {
-                document.getElementById("profile-avatar").src = user.photoURL;
-            }
+            if (user.photoURL) document.getElementById("profile-avatar").src = user.photoURL;
             document.getElementById("profile-referredby").innerText = user.refferBy || "None";
             document.getElementById("profile-totalref").innerText = user.reffer || 0;
             document.getElementById("profile-coins").innerText = user.coins || 0;
-           document.getElementById("profile-withdrawals").innerText =
-    "₹0.00";
             document.getElementById("profile-tasks").innerText = user.tasksCompleted || 0;
         }
 
@@ -1772,7 +999,6 @@ function renderApprovedWithdrawalTotal(list) {
             showToast("Profile data is updated in real-time!", "success");
         }
 
-        /* ================= TAB SWITCHING ================= */
         function switchTabs(tabName) {
             const tabs = ['dashboard', 'tasks', 'withdrawal', 'profile'];
             tabs.forEach(t => {
@@ -1791,7 +1017,6 @@ function renderApprovedWithdrawalTotal(list) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        /* ================= UTILITIES & HELPERS ================= */
         function copyReferralLink() {
             const input = document.getElementById("referral-link-input");
             input.select();
@@ -1819,11 +1044,7 @@ function renderApprovedWithdrawalTotal(list) {
             toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i><span class="flex-1">${escapeHtml(message)}</span>`;
             
             container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.remove("translate-y-2", "opacity-0");
-            }, 10);
-
+            setTimeout(() => toast.classList.remove("translate-y-2", "opacity-0"), 10);
             setTimeout(() => {
                 toast.classList.add("translate-y-2", "opacity-0");
                 setTimeout(() => toast.remove(), 300);
@@ -1842,9 +1063,6 @@ function renderApprovedWithdrawalTotal(list) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
-
-        
     </script>
-    
 </body>
 </html>
