@@ -1330,25 +1330,22 @@ async function watchAdsgramAd() {
         // confirms that the ad session has been created.
         startAdCountdown();
 
-        if (typeof Adsgram === "undefined") {
-            throw new Error("Adsgram SDK is not available.");
-        }
+        // NOTE: Monetag completion is required in addition to the timer.
+if (typeof show_11933837 !== "function") {
+    throw new Error("Monetag SDK is not available.");
+}
 
-        // NOTE: Adsgram completion is required in addition to the timer.
-        const adController = Adsgram.init({
-            blockId: "int-7269"
-        });
+// Show Monetag rewarded interstitial.
+await show_11933837();
 
-        await adController.show();
+// NOTE: Monetag reported successful ad completion.
+// No coins are credited here; backend completion is still required.
+adProviderCompleted = true;
 
-        // NOTE: Adsgram successfully completed the ad.
-        // No coins are credited here; backend completion is still required.
-        adProviderCompleted = true;
+document.getElementById("ad-reward-status").innerText =
+    "Ad completed. Waiting for timer...";
 
-        document.getElementById("ad-reward-status").innerText =
-            "Ad completed. Waiting for timer...";
-
-        attemptAdCompletion();
+attemptAdCompletion();
 
     } catch (error) {
         console.error("Ad failed or was closed:", error);
