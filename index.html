@@ -627,13 +627,7 @@ function getTelegramInitData() {
                     };
 
                     userRef.set(newUser).then(() => {
-                        // If referred by someone, increment their referral count
-                        if (referralByVal) {
-                            const referrerRef = db.collection("users").doc(referralByVal);
-                            referrerRef.update({
-                                reffer: firebase.firestore.FieldValue.increment(1)
-                            }).catch(err => console.log("Referrer update failed:", err));
-                        }
+                        
                         setupRealtimeListeners();
                     }).catch(err => {
                         console.error("Error creating user:", err);
@@ -1049,6 +1043,7 @@ function startAdCountdown() {
 // 1. 30-second timer completed.
 // 2. Adsgram reported successful ad completion.
 async function attemptAdCompletion() {
+
     if (
         !activeAdSessionId ||
         !adTimerFinished ||
@@ -1060,50 +1055,129 @@ async function attemptAdCompletion() {
 
     adCompletionInProgress = true;
 
+    const sessionId = activeAdSessionId;
+
     try {
+
         const initData = getTelegramInitData();
 
-        const response = await fetch("/api/ad/complete", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                initData: initData,
-                session_id: activeAdSessionId
-            })
-        });
+        let lastError = null;
 
-        const result = await response.json();
+        // Retry the SAME session up to 3 times.
+        for (let attempt = 1; attempt <= 3; attempt++) {
 
-        if (!response.ok || !result.success) {
-            throw new Error(
-                result.error || "Ad reward verification failed."
-            );
+            try {
+
+                const response = await fetch(
+                    "/api/ad/complete",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            initData: initData,
+                            session_id: sessionId
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                // Backend returns { ok: true }
+                if (response.ok && result.ok) {
+
+                    document.getElementById(
+                        "ad-reward-status"
+                    ).innerText =
+                        "Ad completed! +50 Coins added.";
+
+                    const closeButton =
+                        document.getElementById(
+                            "ad-close-button"
+                        );
+
+                    closeButton.disabled = false;
+
+                    closeButton.classList.remove(
+                        "opacity-60",
+                        "cursor-not-allowed",
+                        "text-slate-500"
+                    );
+
+                    closeButton.classList.add(
+                        "text-white"
+                    );
+
+                    showToast(
+                        "🎉 Ad watched successfully! +50 coins added.",
+                        "success"
+                    );
+
+                    // Clear ONLY after successful verification.
+                    activeAdSessionId = null;
+
+                    return;
+                }
+
+                throw new Error(
+                    result.error ||
+                    result.message ||
+                    "Ad reward verification failed."
+                );
+
+            } catch (error) {
+
+                lastError = error;
+
+                console.error(
+                    `Ad completion attempt ${attempt} failed:`,
+                    error
+                );
+
+                if (attempt < 3) {
+
+                    document.getElementById(
+                        "ad-reward-status"
+                    ).innerText =
+                        `Verifying reward... (${attempt}/3)`;
+
+                    await new Promise(resolve =>
+                        setTimeout(resolve, 1500)
+                    );
+                }
+            }
         }
 
-        // NOTE: Reward has now been credited by the backend.
-        document.getElementById("ad-reward-status").innerText =
-            "Ad completed! +50 Coins added.";
+        // IMPORTANT:
+        // Do NOT clear activeAdSessionId here.
+        document.getElementById(
+            "ad-reward-status"
+        ).innerText =
+            "Reward verification failed. Please try again.";
 
-        const closeButton = document.getElementById("ad-close-button");
-
-        closeButton.disabled = false;
-
-        closeButton.classList.remove(
-            "opacity-60",
-            "cursor-not-allowed",
-            "text-slate-500"
+        showToast(
+            "Network issue. Your ad session is still active. Please try again.",
+            "error"
         );
 
-        closeButton.classList.add("text-white");
-
-        showToast("🎉 Ad watched successfully! +50 coins added.", "success");
+        console.error(
+            "Ad completion failed after retries:",
+            lastError
+        );
 
     } catch (error) {
-        console.error("Ad completion error:", error);
 
-        document.getElementById("ad-reward-status").innerText =
+        console.error(
+            "Ad completion setup error:",
+            error
+        );
+
+        document.getElementById(
+            "ad-reward-status"
+        ).innerText =
             "Reward verification failed.";
 
         showToast(
@@ -1112,10 +1186,11 @@ async function attemptAdCompletion() {
         );
 
     } finally {
+
         adCompletionInProgress = false;
+
     }
 }
-
 
 // NOTE: Starts a secure backend ad session before showing Adsgram.
 // The backend creates the session and records the official start time.
@@ -1141,7 +1216,7 @@ async function watchAdsgramAd() {
 
         const result = await response.json();
 
-        if (!response.ok || !result.success) {
+        if (!response.ok || !result.ok) {
             throw new Error(
                 result.error || "Unable to start ad session."
             );
@@ -1503,59 +1578,75 @@ function renderWithdrawalsHistory(list) {
 
 /* ================= APPROVED WITHDRAWAL TOTAL ================= */
 
+/* ================= APPROVED WITHDRAWAL TOTAL ================= */
+
 function renderApprovedWithdrawalTotal(list) {
 
     let approvedCoins = 0;
 
-    list.forEach(wd => {
+    if (!Array.isArray(list)) {
+        list = [];
+    }
+
+    list.forEach((wd) => {
 
         const status =
-            String(
-                wd.status || ""
-            ).toUpperCase();
+            String(wd.status || "")
+                .toUpperCase();
 
+        // Only APPROVED withdrawals count
         if (status !== "APPROVED") {
             return;
         }
 
-        // New schema first, old schema fallback.
+        // New field: coins
+        // Old field: amount
         const coins = Number(
             wd.coins ??
             wd.amount ??
             0
         );
 
-        approvedCoins += coins;
+        if (
+            Number.isFinite(coins) &&
+            coins > 0
+        ) {
+            approvedCoins += coins;
+        }
     });
 
-    const rupees =
-        coinsToRupees(approvedCoins);
 
-    // Dashboard
+    const formattedTotal =
+        formatRupeesFromCoins(approvedCoins);
+
+
+    // Dashboard → Total Cashed Out
     const dashboardEl =
         document.getElementById(
             "stat-withdrawals"
         );
 
     if (dashboardEl) {
+
         dashboardEl.innerText =
-            formatRupeesFromCoins(
-                approvedCoins
-            );
+            formattedTotal;
+
     }
 
-    // Profile
+
+    // Profile → Total Cashed Out
     const profileEl =
         document.getElementById(
             "profile-withdrawals"
         );
 
     if (profileEl) {
+
         profileEl.innerText =
-            formatRupeesFromCoins(
-                approvedCoins
-            );
+            formattedTotal;
+
     }
+
 }
         
 
