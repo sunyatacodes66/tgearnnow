@@ -549,6 +549,9 @@ function getTelegramInitData() {
                 if (initData.start_param) {
                     startParam = String(initData.start_param);
                 }
+
+                setupAdBackButtonProtection();
+                
             } catch (e) {
                 console.error("Telegram initialization failed:", e);
             }
@@ -964,7 +967,80 @@ let adTimerInterval = null;
 let adTimerFinished = false;
 let adProviderCompleted = false;
 let adCompletionInProgress = false;
+let adAppHidden = false;
+let adSessionStartedAt = null;
 
+        /* ================= AD BACKGROUND DETECTION ================= */
+
+document.addEventListener("visibilitychange", () => {
+
+    if (!activeAdSessionId) {
+        return;
+    }
+
+    if (document.hidden) {
+
+        adAppHidden = true;
+
+        console.log("Ad app moved to background.");
+
+        return;
+    }
+
+    if (!document.hidden && adAppHidden) {
+
+        adAppHidden = false;
+
+        console.log("Ad app returned to foreground.");
+
+        if (adSessionStartedAt) {
+
+            const elapsedSeconds =
+                Math.floor(
+                    (Date.now() - adSessionStartedAt) / 1000
+                );
+
+            console.log(
+                "Ad session elapsed time:",
+                elapsedSeconds,
+                "seconds"
+            );
+        }
+    }
+});
+
+        /* ================= TELEGRAM BACK BUTTON PROTECTION ================= */
+
+function setupAdBackButtonProtection() {
+
+    if (
+        !window.Telegram ||
+        !Telegram.WebApp ||
+        !Telegram.WebApp.BackButton
+    ) {
+        return;
+    }
+
+    Telegram.WebApp.BackButton.onClick(() => {
+
+        // If an ad session is active, do not allow
+        // the Telegram Back button to bypass the ad flow.
+        if (activeAdSessionId) {
+
+            showToast(
+                "Please finish the current ad first.",
+                "error"
+            );
+
+            return;
+        }
+
+        // No active ad session:
+        // normal Telegram back behavior.
+        Telegram.WebApp.BackButton.hide();
+
+    });
+}
 
 // NOTE: Formats seconds as MM:SS for the fullscreen ad countdown.
 function formatAdCountdown(seconds) {
@@ -981,6 +1057,8 @@ function resetAdOverlay() {
     adTimerFinished = false;
     adProviderCompleted = false;
     adCompletionInProgress = false;
+    adAppHidden = false;
+adSessionStartedAt = null;
 
     if (adTimerInterval) {
         clearInterval(adTimerInterval);
@@ -1005,6 +1083,15 @@ function resetAdOverlay() {
     closeButton.classList.remove("text-white");
 
     status.innerText = "Please wait until the timer completes.";
+
+if (
+    window.Telegram &&
+    Telegram.WebApp &&
+    Telegram.WebApp.BackButton
+) {
+    Telegram.WebApp.BackButton.hide();
+}
+    
 }
 
 
@@ -1224,6 +1311,15 @@ async function watchAdsgramAd() {
 
         // NOTE: Save the server-created session ID.
         activeAdSessionId = result.session_id;
+        adSessionStartedAt = Date.now();
+        adAppHidden = false;
+        if (
+    window.Telegram &&
+    Telegram.WebApp &&
+    Telegram.WebApp.BackButton
+) {
+    Telegram.WebApp.BackButton.show();
+}
 
         const overlay = document.getElementById("ad-reward-overlay");
 
@@ -1266,6 +1362,14 @@ async function watchAdsgramAd() {
         activeAdSessionId = null;
         adTimerFinished = false;
         adProviderCompleted = false;
+
+        if (
+    window.Telegram &&
+    Telegram.WebApp &&
+    Telegram.WebApp.BackButton
+) {
+    Telegram.WebApp.BackButton.hide();
+}
 
         document.getElementById("ad-reward-overlay")
             .classList.add("hidden");
