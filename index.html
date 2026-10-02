@@ -233,7 +233,7 @@
             <div class="glass-card rounded-2xl p-5 text-center relative overflow-hidden bg-gradient-to-b from-emerald-950/40 to-slate-900/60">
                 <p class="text-xs text-slate-400 uppercase tracking-wider mb-1 font-semibold">Withdrawable Balance</p>
                 <h3 id="withdrawal-balance" class="text-3xl font-black text-white">₹0</h3>
-                <p class="text-[10px] text-slate-400 mt-1">Minimum withdrawal: ₹10 (100 Coins = ₹1)</p>
+                <p class="text-[10px] text-slate-400 mt-1">Minimum withdrawal: ₹300 (10 Coins = ₹1)</p>
             </div>
 
             <!-- Withdrawal Form -->
@@ -624,7 +624,8 @@ document.getElementById("stat-coins").innerText =
             document.getElementById("stat-tasks").innerText = user.tasksCompleted || 0;
 
             // Update Withdrawal balance display
-            document.getElementById("withdrawal-balance").innerText = "₹" + (user.coins || 0);
+           document.getElementById("withdrawal-balance").innerText =
+    formatRupeesFromCoins(user.coins);
 
             // Referral Link
             const refLink = `https://t.me/${BOT_USERNAME}?start=${user.id}`;
@@ -800,7 +801,7 @@ document.getElementById("stat-coins").innerText =
                 return;
             }
             if (isNaN(amount) || amount < 100) {
-                showToast("Minimum withdrawal amount is 100 Coins (₹10)", "error");
+                showToast("Minimum withdrawal amount is 3000 Coins (₹300)", "error");
                 return;
             }
 
@@ -863,7 +864,7 @@ document.getElementById("stat-coins").innerText =
                 html += `
                     <div class="glass-card p-3 rounded-xl flex items-center justify-between text-xs">
                         <div>
-                            <p class="font-bold text-white">₹${wd.amount} <span class="text-[10px] text-slate-400 font-normal">(${wd.upi})</span></p>
+                            <p class="font-bold text-white">${formatRupeesFromCoins(wd.amount)} <span class="text-[10px] text-slate-400 font-normal">(${wd.upi})</span></p>
                             <p class="text-[10px] text-slate-500">ID: ${wd.id.substring(0, 8)}...</p>
                         </div>
                         <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColor}">${wd.status}</span>
@@ -883,7 +884,8 @@ document.getElementById("stat-coins").innerText =
             document.getElementById("profile-referredby").innerText = user.refferBy || "None";
             document.getElementById("profile-totalref").innerText = user.reffer || 0;
             document.getElementById("profile-coins").innerText = user.coins || 0;
-            document.getElementById("profile-withdrawals").innerText = "₹" + (user.totalWithdrawals || 0);
+            document.getElementById("profile-withdrawals").innerText =
+    formatRupeesFromCoins(user.totalWithdrawals);
             document.getElementById("profile-tasks").innerText = user.tasksCompleted || 0;
         }
 
