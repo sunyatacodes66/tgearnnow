@@ -390,7 +390,25 @@
             initFirebase();
             createOrFetchUser();
         });
+        
+/* ================= CURRENCY HELPER ================= */
 
+// NOTE: Central currency conversion helper.
+// New withdrawal system uses 10 coins = ₹1.
+// Existing constants/functions ko change nahi karna hai.
+
+const COINS_PER_RUPEE = 10;
+
+// NOTE: Converts coins into their equivalent rupee value.
+function coinsToRupees(coins) {
+    const numericCoins = Number(coins) || 0;
+    return numericCoins / COINS_PER_RUPEE;
+}
+
+// NOTE: Formats the rupee value consistently for the UI.
+function formatRupeesFromCoins(coins) {
+    return `₹${coinsToRupees(coins).toFixed(2)}`;
+}
         /* ================= TELEGRAM INIT ================= */
         function initTelegram() {
             try {
@@ -596,7 +614,11 @@
                 document.getElementById("header-avatar").src = user.photoURL;
             }
 
-            document.getElementById("stat-coins").innerText = user.coins || 0;
+           // NOTE: Show the live coin balance together with its rupee equivalent.
+// Conversion uses the Step 7 helper: 10 coins = ₹1.
+const currentCoins = Number(user.coins) || 0;
+document.getElementById("stat-coins").innerText =
+    `${currentCoins} coins (${formatRupeesFromCoins(currentCoins)})`;
             document.getElementById("stat-referrals").innerText = user.reffer || 0;
             document.getElementById("stat-withdrawals").innerText = user.totalWithdrawals || 0;
             document.getElementById("stat-tasks").innerText = user.tasksCompleted || 0;
