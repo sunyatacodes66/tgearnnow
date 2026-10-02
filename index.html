@@ -1331,26 +1331,22 @@ async function watchAdsgramAd() {
         startAdCountdown();
 
         // NOTE: Monetag completion is required in addition to the timer.
-if (typeof show_11933837 !== "function") {
-    throw new Error("Monetag SDK is not available.");
-}
+        if (typeof show_11933837 !== "function") {
+            throw new Error("Monetag SDK is not available.");
+        }
 
-// Show Monetag rewarded interstitial.
+        // Show Monetag rewarded interstitial.
         console.log("Monetag function:", typeof show_11933837);
-show_11933837().then(() => {
-    adProviderCompleted = true;
+        show_11933837().then(() => {
+            adProviderCompleted = true;
 
-    document.getElementById("ad-reward-status").innerText =
-        "Ad completed. Waiting for timer...";
+            document.getElementById("ad-reward-status").innerText =
+                "Ad completed. Waiting for timer...";
 
-    attemptAdCompletion();
-}).catch((error) => {
-    console.error("Monetag ad error:", error);
-});
-
-// NOTE: Monetag reported successful ad completion.
-// No coins are credited here; backend completion is still required.
-
+            attemptAdCompletion();
+        }).catch((error) => {
+            console.error("Monetag ad error:", error);
+        });
 
     } catch (error) {
         console.error("Ad failed or was closed:", error);
