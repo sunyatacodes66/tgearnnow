@@ -693,10 +693,12 @@
         function renderDashboard(user) {
             document.getElementById("header-name").innerText = user.name || "User";
             document.getElementById("header-userid").innerText = user.id;
-            if (user.photoURL) {
-                document.getElementById("header-avatar").src = user.photoURL;
+                        // NOTE: Prefer the fresh Telegram photo URL. The URL saved in
+            // Firestore can expire and would make the photo disappear.
+            const headerPhoto = tgUser.photo_url || user.photoURL;
+            if (headerPhoto) {
+                document.getElementById("header-avatar").src = headerPhoto;
             }
-
             const currentCoins = Number(user.coins) || 0;
             document.getElementById("stat-coins").innerText = `${currentCoins} coins (${formatRupeesFromCoins(currentCoins)})`;
             document.getElementById("stat-referrals").innerText = user.reffer || 0;
@@ -1218,8 +1220,10 @@
         function renderProfile(user) {
             document.getElementById("profile-name").innerText = user.name || "User";
             document.getElementById("profile-userid").innerText = user.id;
-            if (user.photoURL) {
-                document.getElementById("profile-avatar").src = user.photoURL;
+                        // NOTE: Same as the header avatar - prefer the fresh Telegram photo.
+            const profilePhoto = tgUser.photo_url || user.photoURL;
+            if (profilePhoto) {
+                document.getElementById("profile-avatar").src = profilePhoto;
             }
             document.getElementById("profile-referredby").innerText = user.refferBy || "None";
             document.getElementById("profile-totalref").innerText = user.reffer || 0;
