@@ -374,7 +374,7 @@
         <!-- Countdown shown in upper-right -->
         <div class="absolute top-5 right-5">
             <div id="ad-countdown" class="bg-slate-900/90 border border-emerald-500/40 text-emerald-400 font-bold text-sm px-3 py-2 rounded-xl">
-                00:30
+                00:20
             </div>
         </div>
 
@@ -886,7 +886,7 @@
             const status = document.getElementById("ad-reward-status");
 
             overlay.classList.add("hidden");
-            countdown.innerText = "00:30";
+            countdown.innerText = "00:20";
 
             closeButton.disabled = true;
             closeButton.classList.add("opacity-60", "cursor-not-allowed", "text-slate-500");
@@ -900,7 +900,7 @@
         }
 
         function startAdCountdown() {
-            let remainingSeconds = 30;
+            let remainingSeconds = 20;
             const countdown = document.getElementById("ad-countdown");
             countdown.innerText = formatAdCountdown(remainingSeconds);
 
